@@ -6,7 +6,6 @@ import { Toaster } from "react-hot-toast";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import "./index.css";
 import Login from "./pages/Login";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
 
@@ -21,6 +20,7 @@ const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
   },
+  {
     path: "/",
     element: <Home />,
   },
