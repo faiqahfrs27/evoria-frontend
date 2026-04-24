@@ -1,4 +1,3 @@
-import { registerSchema } from "../schemas/registerSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -10,11 +9,12 @@ import { Link, useNavigate } from "react-router";
 import AuthPanel from "../components/register/AuthPanel";
 import FormField from "../components/register/FormField";
 import GoldButton from "../components/register/GoldButton";
-import { axiosInstance } from "../lib/axios";
-import { fadeUp } from "../lib/animationStyle";
-import { useAuth } from "../stores/useAuth";
 import { useGoogleAuth } from "../hooks/useGoogleAuth";
+import { fadeUp } from "../lib/animationStyle";
+import { axiosInstance } from "../lib/axios";
 import type { RegisterSchema } from "../schemas/registerSchema";
+import { registerSchema } from "../schemas/registerSchema";
+import { useAuth } from "../stores/useAuth";
 
 const getStrength = (p: string) => {
   let s = 0;
@@ -26,9 +26,9 @@ const getStrength = (p: string) => {
 };
 
 const strengthColors = ["", "#EF4444", "#F59E0B", "#EAB308", "#22C55E"];
-const strengthLabels = ["", "Lemah", "Cukup", "Baik", "Kuat"];
+const strengthLabels = ["", "Weak", "Fine", "Good", "Strong"];
 
-function Register() {
+function Register({ role = "USER" }: { role?: "USER" | "ORGANIZER" }) {
   const setAuth = useAuth((s) => s.login);
   const navigate = useNavigate();
   const { handleGoogleLogin, isPending: isGooglePending } = useGoogleAuth();
@@ -54,6 +54,7 @@ function Register() {
         name: payload.name,
         email: payload.email,
         password: payload.password,
+        role: role,
       });
       return res.data;
     },
@@ -171,7 +172,7 @@ function Register() {
                   marginBottom: 6,
                 }}
               >
-                Buat akun
+                Create Account
               </p>
               <h1
                 style={{
@@ -183,11 +184,22 @@ function Register() {
                   marginBottom: 6,
                 }}
               >
-                Bergabung ke{" "}
-                <span className="text-shimmer">lingkaran eksklusif</span>
+                {role === "ORGANIZER" ? (
+                  <>
+                    Join as{" "}
+                    <span className="text-shimmer">Organizer</span>
+                  </>
+                ) : (
+                  <>
+                    Join the world of{" "}
+                    <span className="text-shimmer">exclusive experiences</span>
+                  </>
+                )}
               </h1>
               <p style={{ fontSize: 12, color: "#8A8A9A", lineHeight: 1.6 }}>
-                Akses eksklusif ke event dan pengalaman privat pilihan.
+                {role === "ORGANIZER" // ✅
+                  ? "Create and manage your exclusive events on Evoria."
+                  : "Get exclusive access to events and private experiences."}
               </p>
             </div>
 
@@ -202,7 +214,7 @@ function Register() {
             >
               <FormField
                 id="name"
-                label="Name"
+                label="Full Name"
                 placeholder="John Doe"
                 error={errors.name}
                 required
@@ -227,7 +239,7 @@ function Register() {
                   id="password"
                   label="Password"
                   type="password"
-                  placeholder="Min. 8 karakter"
+                  placeholder="Min. 8 character"
                   error={errors.password}
                   required
                   autoComplete="new-password"
@@ -257,7 +269,7 @@ function Register() {
                       <p
                         style={{ fontSize: 11, color: "#8A8A9A", marginTop: 4 }}
                       >
-                        Kekuatan:{" "}
+                        Strength:{" "}
                         <span style={{ color: "#F9F3E8" }}>
                           {strengthLabels[strength]}
                         </span>
@@ -269,9 +281,9 @@ function Register() {
 
               <FormField
                 id="confirmPassword"
-                label="Konfirmasi Password"
+                label="Confirm Password"
                 type="password"
-                placeholder="Ulangi password"
+                placeholder="Repeat password"
                 error={errors.confirmPassword}
                 required
                 autoComplete="new-password"
@@ -328,21 +340,20 @@ function Register() {
                 <span
                   style={{ fontSize: 11, color: "#8A8A9A", lineHeight: 1.6 }}
                 >
-                  Saya menyetujui{" "}
+                  I agree to Evoria's{" "}
                   <Link
                     to="/terms"
                     style={{ color: "#D4A94A", textDecoration: "none" }}
                   >
-                    Syarat & Ketentuan
+                    Terms & Conditions
                   </Link>{" "}
-                  dan{" "}
+                  and{" "}
                   <Link
                     to="/privacy"
                     style={{ color: "#D4A94A", textDecoration: "none" }}
                   >
-                    Kebijakan Privasi
+                    Privacy Policy
                   </Link>{" "}
-                  Evoria
                 </span>
               </label>
               {errors.agreeToTerms && (
@@ -374,7 +385,7 @@ function Register() {
                     gap: 8,
                   }}
                 >
-                  Buat Akun <ArrowRight size={14} strokeWidth={2} />
+                  Register <ArrowRight size={14} strokeWidth={2} />
                 </span>
               </GoldButton>
             </div>
@@ -398,7 +409,7 @@ function Register() {
                   textTransform: "uppercase",
                 }}
               >
-                atau
+                OR
               </span>
               <div style={{ flex: 1, height: 0.5, background: "#1C1C22" }} />
             </div>
@@ -420,7 +431,7 @@ function Register() {
                     gap: 8,
                   }}
                 >
-                  <FcGoogle size={16} /> Lanjutkan dengan Google
+                  <FcGoogle size={16} /> Continue With Google
                 </span>
               </GoldButton>
             </div>
@@ -435,7 +446,7 @@ function Register() {
                 marginTop: 20,
               }}
             >
-              Sudah punya akun?{" "}
+              Already have an Account?{" "}
               <Link
                 to="/login"
                 style={{
@@ -444,9 +455,54 @@ function Register() {
                   fontWeight: 500,
                 }}
               >
-                Masuk
+                Login
               </Link>
             </p>
+            {role === "USER" ? (
+              <p
+                style={{
+                  ...fadeUp(850),
+                  textAlign: "center",
+                  fontSize: 12,
+                  color: "#8A8A9A",
+                  marginTop: 8,
+                }}
+              >
+                Hosting an events?{" "}
+                <Link
+                  to="/register/organizer"
+                  style={{
+                    color: "#D4A94A",
+                    textDecoration: "none",
+                    fontWeight: 500,
+                  }}
+                >
+                  Join as Organizer
+                </Link>
+              </p>
+            ) : (
+              <p
+                style={{
+                  ...fadeUp(850),
+                  textAlign: "center",
+                  fontSize: 12,
+                  color: "#8A8A9A",
+                  marginTop: 8,
+                }}
+              >
+                Join as a attendee?{" "}
+                <Link
+                  to="/register"
+                  style={{
+                    color: "#D4A94A",
+                    textDecoration: "none",
+                    fontWeight: 500,
+                  }}
+                >
+                  Click here
+                </Link>
+              </p>
+            )}
           </form>
         </div>
       </div>
