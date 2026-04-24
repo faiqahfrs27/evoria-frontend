@@ -15,49 +15,41 @@ const formatPrice = (price: number) => {
 };
 
 function EventCard({ event }: EventCardProps) {
-  const categoryColors: Record<string, string> = {
-    MUSIC: "from-purple-600 to-yellow-500",
-    SPORTS: "from-green-600 to-yellow-500",
-    FOOD: "from-pink-600 to-yellow-500",
-    ART: "from-teal-600 to-yellow-500",
-    EDUCATION: "from-blue-600 to-yellow-500",
-    OTHER: "from-gray-600 to-yellow-500",
-  };
-
-  const gradient = categoryColors[event.category] || categoryColors.OTHER;
-
   return (
-    <Link to={`/event/${event.id}`}>
-      <div className="bg-slate-800/50 border border-yellow-400/30 rounded-lg overflow-hidden hover:border-yellow-400/60 transition-all duration-300 h-full flex flex-col group">
-        {/* Image */}
-        <div className={`h-40 bg-gradient-to-br ${gradient} overflow-hidden group-hover:scale-105 transition-transform duration-500`}>
-          {event.imageUrl && (
-            <img src={event.imageUrl} alt={event.name} className="w-full h-full object-cover" />
+    <Link to={`/event/${event.id}`} className="group block h-full">
+      <article className="evoria-card flex h-full flex-col overflow-hidden rounded-[1.1rem] transition duration-300 hover:-translate-y-1 hover:border-[rgba(212,169,74,0.42)]">
+        <div className="relative h-44 overflow-hidden bg-[#1C1C22]">
+          {event.imageUrl ? (
+            <img src={event.imageUrl} alt={event.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+          ) : (
+            <div className="h-full w-full bg-[radial-gradient(circle_at_25%_20%,rgba(212,169,74,0.22),transparent_32%),linear-gradient(135deg,#1C1C22,#0D0D0F)]" />
           )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0F]/90 via-transparent to-transparent" />
+          <span className="absolute left-4 top-4 rounded-full border border-[rgba(212,169,74,0.28)] bg-[#0D0D0F]/60 px-3 py-1 text-[10px] font-semibold tracking-[0.14em] text-[#D4A94A] backdrop-blur">
+            {event.category}
+          </span>
         </div>
 
-        {/* Content */}
-        <div className="p-4 flex-1 flex flex-col">
-          <h3 className="text-white font-bold text-sm mb-2 line-clamp-2 group-hover:text-yellow-300 transition-colors">
+        <div className="flex flex-1 flex-col p-5">
+          <h3 className="mb-3 line-clamp-2 text-base font-semibold leading-6 text-[#F9F3E8] transition group-hover:text-[#E8C97A]">
             {event.name}
           </h3>
 
-          <div className="flex items-center gap-1 text-gray-400 text-xs mb-3">
-            <MapPin size={12} />
+          <div className="mb-5 flex items-center gap-2 text-xs text-[#8A8A9A]">
+            <MapPin size={13} className="text-[#D4A94A]/70" />
             <span className="line-clamp-1">{event.location}</span>
           </div>
 
-          {/* Footer */}
-          <div className="flex justify-between items-center pt-3 border-t border-slate-700/50 mt-auto">
-            <span className={`font-bold text-sm ${event.isFree ? "text-green-400" : "text-yellow-400"}`}>
+          <div className="mt-auto flex items-center justify-between border-t border-[rgba(212,169,74,0.12)] pt-4">
+            <span className="text-sm font-semibold text-[#D4A94A]">
               {event.isFree ? "FREE" : formatPrice(event.price)}
             </span>
-            <div className="w-7 h-7 rounded-full bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center group-hover:bg-yellow-400 group-hover:border-yellow-400 transition-all">
-              <ArrowRight size={14} className="text-yellow-400 group-hover:text-black transition-colors" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(212,169,74,0.32)] bg-[rgba(212,169,74,0.06)] transition group-hover:bg-[#D4A94A]">
+              <ArrowRight size={15} className="text-[#D4A94A] transition group-hover:text-[#0D0D0F]" />
             </div>
           </div>
         </div>
-      </div>
+      </article>
     </Link>
   );
 }

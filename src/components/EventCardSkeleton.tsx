@@ -1,19 +1,12 @@
 function EventCardSkeleton() {
   return (
-    <div style={{
-      borderRadius: "1rem",
-      overflow: "hidden",
-      background: "rgba(255,255,255,0.04)",
-      border: "1px solid rgba(255,255,255,0.08)",
-    }}>
-      <div style={{
-        height: "11rem",
-        background: "rgba(255,255,255,0.08)",
-      }} />
-      <div style={{ padding: "1rem" }}>
-        <div style={{ height: "1rem", borderRadius: "0.5rem", background: "rgba(255,255,255,0.08)", marginBottom: "0.75rem", width: "75%" }} />
-        <div style={{ height: "0.75rem", borderRadius: "0.5rem", background: "rgba(255,255,255,0.06)", marginBottom: "1rem", width: "50%" }} />
-        <div style={{ height: "1rem", borderRadius: "0.5rem", background: "rgba(255,255,255,0.08)", width: "33%" }} />
+    <div className="evoria-card animate-pulse overflow-hidden rounded-[1.1rem]">
+      <div className="h-44 bg-[rgba(249,243,232,0.06)]" />
+      <div className="space-y-4 p-5">
+        <div className="h-4 w-3/4 rounded-full bg-[rgba(249,243,232,0.08)]" />
+        <div className="h-3 w-1/2 rounded-full bg-[rgba(249,243,232,0.06)]" />
+        <div className="h-px w-full bg-[rgba(212,169,74,0.12)]" />
+        <div className="h-4 w-1/3 rounded-full bg-[rgba(249,243,232,0.08)]" />
       </div>
     </div>
   );

@@ -1,23 +1,23 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useQuery } from "@tanstack/react-query";
+import { ArrowRight } from "lucide-react";
 import { axiosInstance } from "../lib/axios";
 import type { Event } from "../types/event";
 import type { PageableResponse } from "../types/pagination";
 
-const categoryColors: Record<string, string> = {
-  MUSIC: "from-purple-600 to-yellow-500",
-  SPORTS: "from-green-600 to-yellow-500",
-  FOOD: "from-pink-600 to-yellow-500",
-  ART: "from-teal-600 to-yellow-500",
-  EDUCATION: "from-blue-600 to-yellow-500",
-  OTHER: "from-gray-600 to-yellow-500",
+const categoryLabels: Record<string, string> = {
+  MUSIC: "Music",
+  SPORTS: "Sports",
+  FOOD: "Food",
+  ART: "Art",
+  EDUCATION: "Education",
+  OTHER: "Other",
 };
 
 function HeroCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Fetch events untuk carousel
   const { data: eventsData, isPending } = useQuery({
     queryKey: ["hero-carousel"],
     queryFn: async () => {
@@ -28,74 +28,81 @@ function HeroCarousel() {
     },
   });
 
-  const events = eventsData || [];
+  const events = eventsData ?? [];
 
-  // Auto-slide effect
   useEffect(() => {
-    if (events.length === 0) return;
-
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % events.length);
-    }, 4000); // Change every 4 seconds
-
-    return () => clearInterval(interval);
+    if (events.length === 0) return undefined;
+    const interval = window.setInterval(() => {
+      setCurrentSlide((previous) => (previous + 1) % events.length);
+    }, 4500);
+    return () => window.clearInterval(interval);
   }, [events.length]);
 
   if (isPending || events.length === 0) {
     return (
-      <section className="w-full pt-20 pb-12 h-64 sm:h-80 lg:h-96 px-4 sm:px-6 lg:px-8">
-        <div className="h-full bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg lg:rounded-2xl animate-pulse" />
+      <section className="px-6 pb-14 pt-24 lg:px-8">
+        <div className="mx-auto max-w-[1280px]">
+          <div className="relative h-[255px] overflow-hidden rounded-[1.35rem] border border-[rgba(212,169,74,0.12)] bg-[#14141A] shadow-[0_30px_90px_rgba(0,0,0,0.38)] sm:h-[310px] lg:h-[340px]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(212,169,74,0.10),transparent_28%),radial-gradient(circle_at_80%_75%,rgba(255,255,255,0.035),transparent_28%)]" />
+            <div className="absolute inset-x-10 bottom-10 h-px bg-gradient-to-r from-transparent via-[rgba(212,169,74,0.24)] to-transparent" />
+          </div>
+        </div>
       </section>
     );
   }
 
-  const event = events[currentSlide];
-  const gradient = categoryColors[event.category] || categoryColors.OTHER;
+  const activeEvent = events[currentSlide];
 
   return (
-    <section className="relative w-full overflow-hidden pt-20">
-      {/* Carousel Container */}
-      <div className="relative h-64 sm:h-80 lg:h-96 w-full mx-auto rounded-lg lg:rounded-2xl overflow-hidden">
-        {/* Slides */}
-        {events.map((e, index) => {
-          const isActive = index === currentSlide;
-          const eventGradient = categoryColors[e.category] || categoryColors.OTHER;
-          return (
-            <Link
-              key={e.id}
-              to={`/event/${e.id}`}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out cursor-pointer group ${
-                isActive ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              {/* Background Image */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${eventGradient}`}>
-                {e.imageUrl && (
-                  <img
-                    src={e.imageUrl}
-                    alt={e.name}
-                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+    <section className="px-6 pb-14 pt-24 lg:px-8">
+      <div className="mx-auto max-w-[1280px]">
+        <div className="relative h-[255px] overflow-hidden rounded-[1.35rem] border border-[rgba(212,169,74,0.14)] bg-[#14141A] shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:h-[310px] lg:h-[340px]">
+          {events.map((event, index) => {
+            const isActive = index === currentSlide;
+            return (
+              <Link
+                key={event.id}
+                to={`/event/${event.id}`}
+                className={`absolute inset-0 transition-opacity duration-1000 ${isActive ? "opacity-100" : "opacity-0"}`}
+              >
+                {event.imageUrl ? (
+                  <img src={event.imageUrl} alt={event.name} className="h-full w-full object-cover transition duration-700 hover:scale-105" />
+                ) : (
+                  <div className="h-full w-full bg-[radial-gradient(circle_at_25%_25%,rgba(212,169,74,0.22),transparent_28%),linear-gradient(135deg,#14141A,#0D0D0F)]" />
                 )}
-              </div>
-            </Link>
-          );
-        })}
-      </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0D0D0F]/90 via-[#0D0D0F]/45 to-transparent" />
+              </Link>
+            );
+          })}
 
-      {/* Dots Indicator */}
-      <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-        {events.map((_, index) => (
-          <button
-            key={index}
-            className={`transition-all duration-300 rounded-full ${
-              index === currentSlide
-                ? "h-3 w-8 sm:h-4 sm:w-10 bg-yellow-400"
-                : "h-3 w-3 sm:h-4 sm:w-4 bg-white/30"
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
+          <div className="pointer-events-none absolute left-8 top-1/2 z-10 max-w-xl -translate-y-1/2 sm:left-12">
+            <p className="evoria-eyebrow mb-3">Featured Experience</p>
+            <h1 className="evoria-section-title mb-3 text-4xl sm:text-5xl lg:text-6xl">
+              {activeEvent.name}
+            </h1>
+            <p className="mb-5 max-w-md text-sm leading-6 text-[#B9B1A5] line-clamp-2">
+              {activeEvent.description ?? "Curated moments for memorable gatherings."}
+            </p>
+            <div className="flex items-center gap-3 text-xs text-[#8A8A9A]">
+              <span className="rounded-full border border-[rgba(212,169,74,0.28)] px-3 py-1 text-[#D4A94A]">
+                {categoryLabels[activeEvent.category] ?? "Experience"}
+              </span>
+              <span>{activeEvent.location}</span>
+              <ArrowRight size={14} className="text-[#D4A94A]" />
+            </div>
+          </div>
+
+          <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+            {events.map((event, index) => (
+              <button
+                key={event.id}
+                onClick={() => setCurrentSlide(index)}
+                className={`h-1.5 rounded-full transition-all ${index === currentSlide ? "w-9 bg-[#D4A94A]" : "w-4 bg-[#F9F3E8]/25 hover:bg-[#D4A94A]/60"}`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
