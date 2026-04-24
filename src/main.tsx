@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import Home from "./pages/Home";
+import Register from "./pages/Register";
 
 const queryClient = new QueryClient();
 
@@ -13,6 +14,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Home />,
+    element: <Register />,
   },
 ]);
 
