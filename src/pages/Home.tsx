@@ -150,25 +150,18 @@ function Home() {
               </ul>
             </div>
 
-            <div>
-              <h4 className="mb-4 text-sm font-semibold text-[#F9F3E8]">For Organizers</h4>
-              <ul className="space-y-3 text-sm text-[#8A8A9A]">
-                <li><Link to="/register?role=organizer" className="transition hover:text-[#D4A94A]">Create Event</Link></li>
-                <li><a href="#" className="transition hover:text-[#D4A94A]">Dashboard</a></li>
-              </ul>
-            </div>
 
             <div>
-              <h4 className="mb-4 text-sm font-semibold text-[#F9F3E8]">Company</h4>
+              <h4 className="mb-4 text-sm font-semibold text-[#F9F3E8]">Evoria Support</h4>
               <ul className="space-y-3 text-sm text-[#8A8A9A]">
-                <li><a href="#" className="transition hover:text-[#D4A94A]">About Us</a></li>
+                <li><a href="#" className="transition hover:text-[#D4A94A]">E-mail : help@evoria.id</a></li>
                 <li><a href="#" className="transition hover:text-[#D4A94A]">Privacy</a></li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-[rgba(212,169,74,0.14)] pt-8 text-center text-xs text-[#6F6F7D]">
-            <p>&copy; 2024 Evoria. All rights reserved.</p>
+            <p>&copy; 2026 Evoria. All rights reserved.</p>
           </div>
         </div>
       </footer>
