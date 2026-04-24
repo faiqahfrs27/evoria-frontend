@@ -1,4 +1,4 @@
-import { registerSchema } from "../schemas/registerSchema";
+import { loginSchema } from "../schemas/loginSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -14,22 +14,10 @@ import { axiosInstance } from "../lib/axios";
 import { fadeUp } from "../lib/animationStyle";
 import { useAuth } from "../stores/useAuth";
 import { useGoogleAuth } from "../hooks/useGoogleAuth";
-import type { RegisterSchema } from "../schemas/registerSchema";
+import type { LoginSchema } from "../schemas/loginSchema";
 
-const getStrength = (p: string) => {
-  let s = 0;
-  if (p.length >= 8) s++;
-  if (/[A-Z]/.test(p)) s++;
-  if (/[0-9]/.test(p)) s++;
-  if (/[^A-Za-z0-9]/.test(p)) s++;
-  return s;
-};
-
-const strengthColors = ["", "#EF4444", "#F59E0B", "#EAB308", "#22C55E"];
-const strengthLabels = ["", "Lemah", "Cukup", "Baik", "Kuat"];
-
-function Register() {
-  const setAuth = useAuth((s) => s.login);
+function Login() {
+  const login = useAuth((s) => s.login);
   const navigate = useNavigate();
   const { handleGoogleLogin, isPending: isGooglePending } = useGoogleAuth();
 
@@ -39,50 +27,40 @@ function Register() {
     watch,
     setValue,
     formState: { errors },
-  } = useForm<RegisterSchema>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: { agreeToTerms: false },
+  } = useForm<LoginSchema>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { rememberMe: false },
   });
 
-  const password = watch("password") ?? "";
-  const agreeToTerms = watch("agreeToTerms");
-  const strength = getStrength(password);
+  const rememberMe = watch("rememberMe");
 
-  const { mutateAsync: registerMutation, isPending } = useMutation({
-    mutationFn: async (payload: RegisterSchema) => {
-      const res = await axiosInstance.post("/auth/register", {
-        name: payload.name,
+  const { mutateAsync: loginMutation, isPending } = useMutation({
+    mutationFn: async (payload: LoginSchema) => {
+      const res = await axiosInstance.post("/auth/login", {
         email: payload.email,
         password: payload.password,
       });
       return res.data;
     },
     onSuccess: (data) => {
-      setAuth(data.user);
-      toast.success("Akun berhasil dibuat. Selamat datang!");
-      navigate("/login");
+      login(data.user);
+      toast.success(`Selamat datang, ${data.user.name.split(" ")[0]}!`);
+      navigate("/dashboard");
     },
     onError: (error: AxiosError<{ message: string }>) => {
-      console.log("Error response:", error.response);
-      toast.error(error.response?.data.message || "Registrasi gagal!");
+      toast.error(error.response?.data.message || "Login gagal!");
     },
   });
 
-  const onSubmit = async (data: RegisterSchema) => {
-    await registerMutation(data);
+  const onSubmit = async (data: LoginSchema) => {
+    await loginMutation(data);
   };
 
   const isLoading = isPending || isGooglePending;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        minHeight: "100vh",
-        background: "#0D0D0F",
-      }}
-    >
-      <AuthPanel quote="Dibuat untuk mereka yang mencari keindahan dalam hal yang luar biasa." />
+    <div style={{ display: "flex", minHeight: "100vh", background: "#0D0D0F" }}>
+      <AuthPanel quote="Every extraordinary journey begins with a single, decisive step." />
 
       {/* Form side */}
       <div
@@ -101,7 +79,7 @@ function Register() {
         <div
           style={{
             position: "absolute",
-            bottom: "20%",
+            top: "20%",
             right: 0,
             width: 350,
             height: 350,
@@ -171,7 +149,7 @@ function Register() {
                   marginBottom: 6,
                 }}
               >
-                Buat akun
+                Welcome back
               </p>
               <h1
                 style={{
@@ -183,11 +161,10 @@ function Register() {
                   marginBottom: 6,
                 }}
               >
-                Bergabung ke{" "}
-                <span className="text-shimmer">lingkaran eksklusif</span>
+                Sign in to <span className="text-shimmer">Evoria</span>
               </h1>
               <p style={{ fontSize: 12, color: "#8A8A9A", lineHeight: 1.6 }}>
-                Akses eksklusif ke event dan pengalaman privat pilihan.
+                Akses pengalaman eksklusif dan event pilihanmu.
               </p>
             </div>
 
@@ -201,109 +178,57 @@ function Register() {
               }}
             >
               <FormField
-                id="name"
-                label="Name"
-                placeholder="John Doe"
-                error={errors.name}
-                required
-                autoComplete="name"
-                delay={100}
-                registration={register("name")}
-              />
-              <FormField
                 id="email"
                 label="Email Address"
                 type="email"
-                placeholder="JohnDoe@example.com"
+                placeholder="kamu@example.com"
                 error={errors.email}
                 required
                 autoComplete="email"
-                delay={200}
+                delay={100}
                 registration={register("email")}
               />
-
-              <div>
-                <FormField
-                  id="password"
-                  label="Password"
-                  type="password"
-                  placeholder="Min. 8 karakter"
-                  error={errors.password}
-                  required
-                  autoComplete="new-password"
-                  delay={300}
-                  registration={register("password")}
-                />
-                {password.length > 0 && (
-                  <div style={{ marginTop: 8 }}>
-                    <div style={{ display: "flex", gap: 4 }}>
-                      {[1, 2, 3, 4].map((i) => (
-                        <div
-                          key={i}
-                          style={{
-                            height: 2,
-                            flex: 1,
-                            borderRadius: 2,
-                            background:
-                              i <= strength
-                                ? strengthColors[strength]
-                                : "#26262E",
-                            transition: "background 0.4s",
-                          }}
-                        />
-                      ))}
-                    </div>
-                    {strength > 0 && (
-                      <p
-                        style={{ fontSize: 11, color: "#8A8A9A", marginTop: 4 }}
-                      >
-                        Kekuatan:{" "}
-                        <span style={{ color: "#F9F3E8" }}>
-                          {strengthLabels[strength]}
-                        </span>
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-
               <FormField
-                id="confirmPassword"
-                label="Konfirmasi Password"
+                id="password"
+                label="Password"
                 type="password"
-                placeholder="Ulangi password"
-                error={errors.confirmPassword}
+                placeholder="Password kamu"
+                error={errors.password}
                 required
-                autoComplete="new-password"
-                delay={400}
-                registration={register("confirmPassword")}
+                autoComplete="current-password"
+                delay={200}
+                registration={register("password")}
               />
             </div>
 
-            {/* Terms */}
-            <div style={{ ...fadeUp(500), marginBottom: 20 }}>
+            {/* Remember me + Forgot password */}
+            <div
+              style={{
+                ...fadeUp(300),
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 20,
+              }}
+            >
               <label
                 style={{
                   display: "flex",
-                  alignItems: "flex-start",
-                  gap: 10,
+                  alignItems: "center",
+                  gap: 8,
                   cursor: "pointer",
                 }}
               >
                 <div
                   onClick={() =>
-                    setValue("agreeToTerms", !agreeToTerms, {
-                      shouldValidate: true,
-                    })
+                    setValue("rememberMe", !rememberMe)
                   }
                   style={{
                     width: 16,
                     height: 16,
                     borderRadius: 4,
-                    flexShrink: 0,
-                    marginTop: 2,
-                    border: `1px solid ${agreeToTerms ? "#D4A94A" : "#26262E"}`,
-                    background: agreeToTerms
+                    border: `1px solid ${rememberMe ? "#D4A94A" : "#26262E"}`,
+                    background: rememberMe
                       ? "rgba(212,169,74,0.2)"
                       : "#1C1C22",
                     display: "flex",
@@ -311,10 +236,16 @@ function Register() {
                     justifyContent: "center",
                     cursor: "pointer",
                     transition: "all 0.2s",
+                    flexShrink: 0,
                   }}
                 >
-                  {agreeToTerms && (
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  {rememberMe && (
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 10 10"
+                      fill="none"
+                    >
                       <path
                         d="M2 5.5L4 7.5L8 3"
                         stroke="#D4A94A"
@@ -325,42 +256,25 @@ function Register() {
                     </svg>
                   )}
                 </div>
-                <span
-                  style={{ fontSize: 11, color: "#8A8A9A", lineHeight: 1.6 }}
-                >
-                  Saya menyetujui{" "}
-                  <Link
-                    to="/terms"
-                    style={{ color: "#D4A94A", textDecoration: "none" }}
-                  >
-                    Syarat & Ketentuan
-                  </Link>{" "}
-                  dan{" "}
-                  <Link
-                    to="/privacy"
-                    style={{ color: "#D4A94A", textDecoration: "none" }}
-                  >
-                    Kebijakan Privasi
-                  </Link>{" "}
-                  Evoria
+                <span style={{ fontSize: 11, color: "#8A8A9A" }}>
+                  Ingat saya
                 </span>
               </label>
-              {errors.agreeToTerms && (
-                <p
-                  style={{
-                    fontSize: 11,
-                    color: "#f87171",
-                    marginTop: 4,
-                    marginLeft: 26,
-                  }}
-                >
-                  {errors.agreeToTerms.message}
-                </p>
-              )}
+
+              <Link
+                to="/forgot-password"
+                style={{
+                  fontSize: 11,
+                  color: "#D4A94A",
+                  textDecoration: "none",
+                }}
+              >
+                Lupa password?
+              </Link>
             </div>
 
             {/* Submit */}
-            <div style={fadeUp(600)}>
+            <div style={fadeUp(400)}>
               <GoldButton
                 type="submit"
                 loading={isPending}
@@ -374,7 +288,7 @@ function Register() {
                     gap: 8,
                   }}
                 >
-                  Buat Akun <ArrowRight size={14} strokeWidth={2} />
+                  Masuk <ArrowRight size={14} strokeWidth={2} />
                 </span>
               </GoldButton>
             </div>
@@ -382,7 +296,7 @@ function Register() {
             {/* Divider */}
             <div
               style={{
-                ...fadeUp(700),
+                ...fadeUp(500),
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
@@ -404,7 +318,7 @@ function Register() {
             </div>
 
             {/* Google */}
-            <div style={fadeUp(750)}>
+            <div style={fadeUp(600)}>
               <GoldButton
                 variant="ghost"
                 type="button"
@@ -425,26 +339,26 @@ function Register() {
               </GoldButton>
             </div>
 
-            {/* Login link */}
+            {/* Register link */}
             <p
               style={{
-                ...fadeUp(800),
+                ...fadeUp(700),
                 textAlign: "center",
                 fontSize: 12,
                 color: "#8A8A9A",
                 marginTop: 20,
               }}
             >
-              Sudah punya akun?{" "}
+              Belum punya akun?{" "}
               <Link
-                to="/login"
+                to="/register"
                 style={{
                   color: "#D4A94A",
                   textDecoration: "none",
                   fontWeight: 500,
                 }}
               >
-                Masuk
+                Daftar sekarang
               </Link>
             </p>
           </form>
@@ -454,4 +368,4 @@ function Register() {
   );
 }
 
-export default Register;
+export default Login;
