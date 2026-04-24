@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
 import { useState } from "react";
-import { Star, Users, TrendingUp, Music, Dumbbell, Utensils, Palette, BookOpen, MoreHorizontal } from "lucide-react";
+import { Music, Dumbbell, Utensils, Palette, BookOpen, MoreHorizontal } from "lucide-react";
 import Navbar from "../components/Navbar";
+import HeroCarousel from "../components/HeroCarousel";
 import EventCard from "../components/EventCard";
 import EventCardSkeleton from "../components/EventCardSkeleton";
 import { axiosInstance } from "../lib/axios";
@@ -35,30 +36,8 @@ function Home() {
     <div className="min-h-screen bg-slate-950 text-white">
       <Navbar />
 
-      {/* HERO SECTION */}
-      <section className="w-full pt-24 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl text-center">
-          <p className="mb-4 text-xs uppercase tracking-widest text-gray-500">Welcome to Evoria</p>
-          <h1 className="mb-4 text-5xl font-bold sm:text-6xl lg:text-7xl">Discover the</h1>
-          <h2 className="mb-8 bg-gradient-to-r from-yellow-400 via-purple-400 to-teal-400 bg-clip-text text-5xl font-bold text-transparent sm:text-6xl lg:text-7xl">
-            Extraordinary
-          </h2>
-          <p className="mx-auto mb-8 max-w-3xl text-base text-gray-300 sm:text-lg">
-            Embark on a journey through celestial workshops, cosmic music, and mystical art galleries. Experience events that transcend the ordinary.
-          </p>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <Link
-              to="/events"
-              className="rounded bg-yellow-400 px-8 py-3 font-bold text-black transition-colors hover:bg-yellow-300"
-            >
-              Explore Events
-            </Link>
-            <button className="rounded border-2 border-yellow-400 px-8 py-3 font-bold text-yellow-400 transition-colors hover:bg-yellow-400/10">
-              Learn More
-            </button>
-          </div>
-        </div>
-      </section>
+      {/* HERO SECTION WITH CAROUSEL */}
+      <HeroCarousel />
 
       {/* CATEGORIES SECTION */}
       <section className="w-full border-y border-yellow-400/20 bg-slate-900/30 px-4 py-16 sm:px-6 lg:px-8">
@@ -128,30 +107,12 @@ function Home() {
       {/* JOIN ORGANIZER SECTION */}
       <section className="w-full border-y border-yellow-400/20 bg-gradient-to-r from-purple-900/30 via-slate-900 to-teal-900/30 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl">
+          <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
             Ready to Share Your Vision?
           </h2>
-          <p className="mx-auto mb-12 max-w-2xl text-base text-gray-300 leading-relaxed sm:text-lg">
-            Join our community of event organizers and creators. Bring your extraordinary ideas to life.
+          <p className="mx-auto mb-8 max-w-2xl text-base text-gray-300 sm:text-lg">
+            Create and manage your own events. Join thousands of organizers building incredible experiences.
           </p>
-
-          <div className="mb-12 grid grid-cols-1 gap-8 sm:grid-cols-3">
-            <div>
-              <Star className="mb-3 mx-auto text-yellow-400" size={28} />
-              <h3 className="mb-2 font-bold">Premium Reach</h3>
-              <p className="text-sm text-gray-400">Access to thousands of event seekers</p>
-            </div>
-            <div>
-              <Users className="mb-3 mx-auto text-yellow-400" size={28} />
-              <h3 className="mb-2 font-bold">Community Support</h3>
-              <p className="text-sm text-gray-400">Connect with other organizers</p>
-            </div>
-            <div>
-              <TrendingUp className="mb-3 mx-auto text-yellow-400" size={28} />
-              <h3 className="mb-2 font-bold">Grow Your Brand</h3>
-              <p className="text-sm text-gray-400">Build and scale your events</p>
-            </div>
-          </div>
 
           <Link
             to="/register?role=organizer"
