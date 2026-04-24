@@ -3,7 +3,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Toaster } from "react-hot-toast";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import "./index.css";
 import Login from "./pages/Login";
