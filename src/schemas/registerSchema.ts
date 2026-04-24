@@ -6,8 +6,11 @@ export const registerSchema = z
     email: z.email("Invalid email"),
     password: z
       .string()
-      .min(6, { message: "Password must be at least 6 chars" }),
-    confirmPassword: z.string(),
+      .min(6, { message: "Password must be at least 6 chars" })
+      .regex(/[A-Z]/, "Must contain an uppercase letter")
+      .regex(/[0-9]/, "Must contain a number"),
+    confirmPassword: z.string().min(1, "Must confirm your password"),
+    agreeToTerms: z.boolean().refine((isChecked) => isChecked === true, "You must agree to the Terms & Conditions"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
