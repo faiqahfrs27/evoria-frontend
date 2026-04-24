@@ -1,798 +1,235 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  ArrowRight,
-  Compass,
-  GraduationCap,
-  Music2,
-  Palette,
-  Sparkles,
-  Trophy,
-  UtensilsCrossed
-} from "lucide-react";
-import { motion } from "motion/react";
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
+import { useState } from "react";
+import { Star, Users, TrendingUp, Music, Dumbbell, Utensils, Palette, BookOpen, MoreHorizontal } from "lucide-react";
+import Navbar from "../components/Navbar";
 import EventCard from "../components/EventCard";
 import EventCardSkeleton from "../components/EventCardSkeleton";
-import Navbar from "../components/Navbar";
 import { axiosInstance } from "../lib/axios";
+import type { Event } from "../types/event";
+import type { PageableResponse } from "../types/pagination";
 
 function Home() {
-  const navigate = useNavigate();
-  const [search, setSearch] = useState("");
-  const [currentBg, setCurrentBg] = useState(0);
+  const [page, setPage] = useState(1);
 
-  const backgrounds = [
-    "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&q=80",
-    "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1920&q=80",
-    "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1920&q=80",
-    "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80",
-    "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1920&q=80",
-  ];
-
-  const categories = [
-    { label: "Music", value: "MUSIC", icon: Music2 },
-    { label: "Sports", value: "SPORTS", icon: Trophy },
-    { label: "Food", value: "FOOD", icon: UtensilsCrossed },
-    { label: "Art", value: "ART", icon: Palette },
-    { label: "Education", value: "EDUCATION", icon: GraduationCap },
-    { label: "Other", value: "OTHER", icon: Sparkles },
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentBg((prev) => (prev + 1) % backgrounds.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const {
-    data: events,
-    isPending,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["events"],
+  const { data: events, isPending, error, refetch } = useQuery({
+    queryKey: ["events", page],
     queryFn: async () => {
-      const { data } = await axiosInstance.get("/events", {
-        params: { take: 6, sortBy: "startDate", sortOrder: "asc" },
+      const { data } = await axiosInstance.get<PageableResponse<Event>>("/events", {
+        params: { page, take: 6 },
       });
       return data;
     },
   });
 
-  const handleSearch = () => {
-    if (search.trim()) {
-      navigate(`/events?search=${search.trim()}`);
-    } else {
-      navigate("/events");
-    }
-  };
-
-  const handleCategoryClick = (category: string) => {
-    navigate(`/events?category=${category}`);
-  };
+  const categories = [
+    { name: "Music", icon: Music },
+    { name: "Sports", icon: Dumbbell },
+    { name: "Food", icon: Utensils },
+    { name: "Art", icon: Palette },
+    { name: "Education", icon: BookOpen },
+    { name: "Other", icon: MoreHorizontal },
+  ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0f" }}>
+    <div className="min-h-screen bg-slate-950 text-white">
       <Navbar />
 
-      {/* ── HERO ── */}
-      <section
-        style={{
-          position: "relative",
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-        }}
-      >
-        {/* Background Carousel */}
-        {backgrounds.map((bg, index) => (
-          <motion.div
-            key={bg}
-            animate={{ opacity: index === currentBg ? 1 : 0 }}
-            transition={{ duration: 1.2, ease: "easeInOut" }}
-            style={{
-              position: "absolute",
-              inset: 0,
-              backgroundImage: `url('${bg}')`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-        ))}
-
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0.55))",
-          }}
-        />
-
-        {/* Dot Indicators */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "5rem",
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            gap: "0.5rem",
-            zIndex: 10,
-          }}
-        >
-          {backgrounds.map((_, index) => (
-            <motion.button
-              key={index}
-              onClick={() => setCurrentBg(index)}
-              animate={{
-                width: index === currentBg ? "1.5rem" : "0.5rem",
-                background:
-                  index === currentBg ? "#facc15" : "rgba(255,255,255,0.4)",
-              }}
-              transition={{ duration: 0.3 }}
-              style={{
-                height: "0.5rem",
-                borderRadius: "9999px",
-                border: "none",
-                cursor: "pointer",
-                padding: 0,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Hero Content */}
-        <div
-          style={{
-            position: "relative",
-            zIndex: 10,
-            textAlign: "center",
-            padding: "0 1rem",
-            maxWidth: "48rem",
-            width: "100%",
-            margin: "0 auto",
-          }}
-        >
-          <motion.h1
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            style={{
-              fontWeight: 800,
-              lineHeight: 1.1,
-              marginBottom: "1.25rem",
-              fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
-            }}
-          >
-            <span style={{ color: "#ffffff", display: "block" }}>
-              Discover the
-            </span>
-            <motion.span
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-              style={{ color: "#facc15", display: "block" }}
-            >
-              Extraordinary
-            </motion.span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-            style={{
-              color: "#d1d5db",
-              fontSize: "clamp(1rem, 2vw, 1.125rem)",
-              marginBottom: "2.5rem",
-              lineHeight: 1.7,
-            }}
-          >
-            Embark on a journey through celestial workshops, cosmic music, and
-            mystical art galleries.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              maxWidth: "36rem",
-              margin: "0 auto",
-              borderRadius: "9999px",
-              overflow: "hidden",
-              background: "rgba(255,255,255,0.1)",
-              backdropFilter: "blur(12px)",
-              border: "1px solid rgba(255,255,255,0.2)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.75rem",
-                flex: 1,
-                padding: "1rem 1.25rem",
-              }}
-            >
-              <Compass size={18} color="#9ca3af" style={{ flexShrink: 0 }} />
-              <input
-                type="text"
-                placeholder="Where will your journey take you?"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  outline: "none",
-                  color: "#ffffff",
-                  fontSize: "0.875rem",
-                  width: "100%",
-                }}
-              />
-            </div>
-            <button
-              onClick={handleSearch}
-              style={{
-                background: "#facc15",
-                color: "#000000",
-                fontWeight: 600,
-                padding: "1rem 1.75rem",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "0.875rem",
-                flexShrink: 0,
-                whiteSpace: "nowrap",
-              }}
-            >
-              Explore Now
-            </button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── CATEGORIES SECTION ── */}
-      <section
-        style={{
-          maxWidth: "72rem",
-          margin: "0 auto",
-          padding: "2.5rem 1.5rem 1rem",
-        }}
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          style={{
-            textAlign: "center",
-            marginBottom: "1.75rem",
-          }}
-        >
-          <h2
-            style={{
-              color: "#ffffff",
-              fontSize: "1.5rem",
-              fontWeight: 700,
-              marginBottom: "0.5rem",
-            }}
-          >
-            Explore by Categories
+      {/* HERO SECTION */}
+      <section className="w-full pt-24 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl text-center">
+          <p className="mb-4 text-xs uppercase tracking-widest text-gray-500">Welcome to Evoria</p>
+          <h1 className="mb-4 text-5xl font-bold sm:text-6xl lg:text-7xl">Discover the</h1>
+          <h2 className="mb-8 bg-gradient-to-r from-yellow-400 via-purple-400 to-teal-400 bg-clip-text text-5xl font-bold text-transparent sm:text-6xl lg:text-7xl">
+            Extraordinary
           </h2>
-          <p
-            style={{
-              color: "#9ca3af",
-              fontSize: "0.875rem",
-            }}
-          >
-            Choose your path and discover events by category
+          <p className="mx-auto mb-8 max-w-3xl text-base text-gray-300 sm:text-lg">
+            Embark on a journey through celestial workshops, cosmic music, and mystical art galleries. Experience events that transcend the ordinary.
           </p>
-        </motion.div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
-            gap: "1rem",
-          }}
-        >
-          {categories.map((category, index) => {
-            const Icon = category.icon;
-
-            return (
-              <motion.button
-                key={category.value}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-                whileHover={{
-                  y: -6,
-                  scale: 1.03,
-                  boxShadow: "0 0 24px rgba(250,204,21,0.08)",
-                }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleCategoryClick(category.value)}
-                style={{
-                  background:
-                    "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: "1rem",
-                  padding: "1.25rem 0.75rem",
-                  cursor: "pointer",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.75rem",
-                  backdropFilter: "blur(10px)",
-                  minHeight: "130px",
-                }}
-              >
-                <div
-                  style={{
-                    width: "3.75rem",
-                    height: "3.75rem",
-                    borderRadius: "9999px",
-                    background:
-                      "radial-gradient(circle at 30% 30%, rgba(250,204,21,0.22), rgba(250,204,21,0.08))",
-                    border: "1px solid rgba(250,204,21,0.28)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 0 20px rgba(250,204,21,0.08)",
-                  }}
-                >
-                  <Icon size={24} color="#facc15" />
-                </div>
-
-                <span
-                  style={{
-                    color: "#ffffff",
-                    fontSize: "0.9rem",
-                    fontWeight: 500,
-                  }}
-                >
-                  {category.label}
-                </span>
-              </motion.button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ── EVENTS SECTION ── */}
-      <section
-        style={{ maxWidth: "72rem", margin: "0 auto", padding: "4rem 1.5rem" }}
-      >
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "2rem",
-          }}
-        >
-          <div>
-            <h2
-              style={{
-                color: "#ffffff",
-                fontSize: "1.5rem",
-                fontWeight: 700,
-                marginBottom: "0.25rem",
-              }}
-            >
-              Upcoming Events
-            </h2>
-            <p style={{ color: "#9ca3af", fontSize: "0.875rem" }}>
-              Discover extraordinary experiences near you
-            </p>
-          </div>
-          <Link
-            to="/events"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.25rem",
-              color: "#facc15",
-              fontSize: "0.875rem",
-              fontWeight: 500,
-              textDecoration: "none",
-            }}
-          >
-            View all <ArrowRight size={14} />
-          </Link>
-        </motion.div>
-
-        {/* Error */}
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            style={{
-              background: "rgba(239,68,68,0.1)",
-              border: "1px solid rgba(239,68,68,0.3)",
-              padding: "1rem 1.5rem",
-              borderRadius: "0.75rem",
-              marginBottom: "1.5rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <p style={{ color: "#f87171", fontSize: "0.875rem" }}>
-              {error.message}
-            </p>
-            <button
-              onClick={() => refetch()}
-              style={{
-                background: "rgba(239,68,68,0.2)",
-                color: "#f87171",
-                padding: "0.4rem 1rem",
-                borderRadius: "0.5rem",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "0.875rem",
-              }}
-            >
-              Retry
-            </button>
-          </motion.div>
-        )}
-
-        {/* Loading */}
-        {isPending && (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "1rem",
-            }}
-          >
-            {Array.from({ length: 6 }).map((_, i) => (
-              <EventCardSkeleton key={i} />
-            ))}
-          </div>
-        )}
-
-        {/* Empty */}
-        {!isPending && events?.data?.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            style={{ textAlign: "center", padding: "4rem 0" }}
-          >
-            <p style={{ fontSize: "3rem", marginBottom: "1rem" }}>✦</p>
-            <h3
-              style={{
-                color: "#ffffff",
-                fontSize: "1.25rem",
-                fontWeight: 600,
-                marginBottom: "0.5rem",
-              }}
-            >
-              No events yet
-            </h3>
-            <p style={{ color: "#9ca3af", fontSize: "0.875rem" }}>
-              The cosmos is quiet for now. Check back soon!
-            </p>
-          </motion.div>
-        )}
-
-        {/* Event Cards */}
-        {!isPending && events?.data?.length > 0 && (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "1rem",
-            }}
-          >
-            {events.data.map((event: any, index: number) => (
-              <motion.div
-                key={event.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <EventCard event={event} />
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* ── CTA SECTION ── */}
-      <motion.section
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.7 }}
-        style={{
-          maxWidth: "72rem",
-          margin: "0 auto",
-          padding: "0 1.5rem 4rem",
-        }}
-      >
-        <div
-          style={{
-            borderRadius: "1rem",
-            padding: "2.5rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "2rem",
-            background: "linear-gradient(135deg, #2a2a1a 0%, #1a1a0a 100%)",
-            border: "1px solid rgba(212,175,55,0.2)",
-          }}
-        >
-          <div style={{ maxWidth: "28rem" }}>
-            <h3
-              style={{
-                color: "#ffffff",
-                fontSize: "1.5rem",
-                fontWeight: 700,
-                marginBottom: "0.75rem",
-                lineHeight: 1.3,
-              }}
-            >
-              Ready to host your own cosmic event?
-            </h3>
-            <p
-              style={{
-                color: "#9ca3af",
-                fontSize: "0.875rem",
-                lineHeight: 1.7,
-              }}
-            >
-              Join our community of mystical organizers and share your magic
-              with the world. We provide all the tools you need to launch
-              successfully.
-            </p>
-          </div>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Link
-              to="/register"
-              style={{
-                background: "#ffffff",
-                color: "#000000",
-                fontWeight: 600,
-                padding: "0.875rem 1.75rem",
-                borderRadius: "9999px",
-                textDecoration: "none",
-                flexShrink: 0,
-                fontSize: "0.9rem",
-                whiteSpace: "nowrap",
-                display: "block",
-              }}
+              to="/events"
+              className="rounded bg-yellow-400 px-8 py-3 font-bold text-black transition-colors hover:bg-yellow-300"
             >
-              Become an Organizer
+              Explore Events
             </Link>
-          </motion.div>
+            <button className="rounded border-2 border-yellow-400 px-8 py-3 font-bold text-yellow-400 transition-colors hover:bg-yellow-400/10">
+              Learn More
+            </button>
+          </div>
         </div>
-      </motion.section>
+      </section>
 
-      {/* ── FOOTER ── */}
-      <footer
-        style={{
-          borderTop: "1px solid rgba(255,255,255,0.08)",
-          background: "rgba(10,10,15,0.98)",
-          marginTop: "1rem",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "72rem",
-            margin: "0 auto",
-            padding: "4rem 1.5rem",
-          }}
-        >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: "2.5rem",
-            }}
-          >
-            {/* Brand */}
-            <div>
-              <div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.1rem",
-                    marginBottom: "0rem",
-                  }}
+      {/* CATEGORIES SECTION */}
+      <section className="w-full border-y border-yellow-400/20 bg-slate-900/30 px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="mb-12 text-center text-3xl font-bold sm:text-4xl lg:text-5xl">
+            Explore Categories
+          </h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6">
+            {categories.map((cat) => {
+              const IconComponent = cat.icon;
+              return (
+                <Link
+                  key={cat.name}
+                  to={`/events?category=${cat.name.toLowerCase()}`}
+                  className="group"
                 >
-                  <img
-                    src="/Evoria Logo.png"
-                    alt="Evoria Logo"
-                    style={{
-                      height: "5.5rem",
-                      width: "0 rem",
-                      objectFit: "contain",
-                    }}
-                  />
-                </div>
-              </div>
-              <p
-                style={{
-                  color: "#6b7280",
-                  fontSize: "0.875rem",
-                  lineHeight: 1.7,
-                }}
-              >
-                The premier destination for discovering celestial workshops,
-                cosmic music, and mystical art experiences.
-              </p>
-            </div>
+                  <div className="rounded border border-yellow-400/40 p-5 text-center transition-all hover:border-yellow-400 hover:bg-yellow-400/5">
+                    <IconComponent size={36} className="mx-auto mb-3 text-yellow-400/70 transition-colors group-hover:text-yellow-400" />
+                    <p className="text-sm font-semibold text-white transition-colors group-hover:text-yellow-300">
+                      {cat.name}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
-            {/* Explore */}
-            <div>
-              <h4
-                style={{
-                  color: "#ffffff",
-                  fontWeight: 600,
-                  fontSize: "0.875rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                Explore
-              </h4>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.5rem",
-                }}
-              >
-                {[
-                  "All Events",
-                  "Featured Venues",
-                  "Trending Categories",
-                  "Mystical Guides",
-                ].map((item) => (
-                  <Link
-                    key={item}
-                    to="/events"
-                    style={{
-                      color: "#6b7280",
-                      fontSize: "0.875rem",
-                      textDecoration: "none",
-                    }}
-                  >
-                    {item}
-                  </Link>
-                ))}
-              </div>
-            </div>
+      {/* FEATURED EVENTS SECTION */}
+      <section className="w-full px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-12 flex items-center justify-between">
+            <h2 className="text-3xl font-bold sm:text-4xl lg:text-5xl">Upcoming Experiences</h2>
+            <Link to="/events" className="whitespace-nowrap font-bold text-yellow-400 transition-colors hover:text-yellow-300">
+              View all →
+            </Link>
+          </div>
 
-            {/* Support */}
-            <div>
-              <h4
-                style={{
-                  color: "#ffffff",
-                  fontWeight: 600,
-                  fontSize: "0.875rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                Support
-              </h4>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.5rem",
-                }}
-              >
-                {[
-                  "Help Center",
-                  "Safety Guide",
-                  "Terms of Service",
-                  "Privacy Policy",
-                ].map((item) => (
-                  <Link
-                    key={item}
-                    to="/"
-                    style={{
-                      color: "#6b7280",
-                      fontSize: "0.875rem",
-                      textDecoration: "none",
-                    }}
-                  >
-                    {item}
-                  </Link>
-                ))}
-              </div>
+          {error && (
+            <div className="mb-8 flex items-center justify-between rounded border border-red-700/50 bg-red-950/50 p-4 text-red-400">
+              <span>Failed to load events</span>
+              <button onClick={() => refetch()} className="text-red-300 underline hover:text-red-200">
+                Retry
+              </button>
             </div>
+          )}
 
-            {/* Subscribe */}
+          {isPending ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3].map((i) => (
+                <EventCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : events?.data.length === 0 ? (
+            <div className="py-16 text-center text-gray-400">No events available</div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {events?.data.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* JOIN ORGANIZER SECTION */}
+      <section className="w-full border-y border-yellow-400/20 bg-gradient-to-r from-purple-900/30 via-slate-900 to-teal-900/30 px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl text-center">
+          <h2 className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl">
+            Ready to Share Your Vision?
+          </h2>
+          <p className="mx-auto mb-12 max-w-2xl text-base text-gray-300 leading-relaxed sm:text-lg">
+            Join our community of event organizers and creators. Bring your extraordinary ideas to life.
+          </p>
+
+          <div className="mb-12 grid grid-cols-1 gap-8 sm:grid-cols-3">
             <div>
-              <h4
-                style={{
-                  color: "#ffffff",
-                  fontWeight: 600,
-                  fontSize: "0.875rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                Subscribe
-              </h4>
-              <p
-                style={{
-                  color: "#6b7280",
-                  fontSize: "0.875rem",
-                  lineHeight: 1.6,
-                  marginBottom: "1rem",
-                }}
-              >
-                Get notified about upcoming astronomical phenomena and events.
-              </p>
-              <div
-                style={{
-                  display: "flex",
-                  borderRadius: "0.5rem",
-                  overflow: "hidden",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                }}
-              >
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  style={{
-                    flex: 1,
-                    background: "rgba(255,255,255,0.05)",
-                    border: "none",
-                    outline: "none",
-                    color: "#ffffff",
-                    fontSize: "0.875rem",
-                    padding: "0.625rem 0.75rem",
-                  }}
-                />
-                <button
-                  style={{
-                    background: "#facc15",
-                    color: "#000",
-                    border: "none",
-                    padding: "0.625rem 0.75rem",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                  }}
-                >
-                  →
-                </button>
-              </div>
+              <Star className="mb-3 mx-auto text-yellow-400" size={28} />
+              <h3 className="mb-2 font-bold">Premium Reach</h3>
+              <p className="text-sm text-gray-400">Access to thousands of event seekers</p>
+            </div>
+            <div>
+              <Users className="mb-3 mx-auto text-yellow-400" size={28} />
+              <h3 className="mb-2 font-bold">Community Support</h3>
+              <p className="text-sm text-gray-400">Connect with other organizers</p>
+            </div>
+            <div>
+              <TrendingUp className="mb-3 mx-auto text-yellow-400" size={28} />
+              <h3 className="mb-2 font-bold">Grow Your Brand</h3>
+              <p className="text-sm text-gray-400">Build and scale your events</p>
             </div>
           </div>
 
-          {/* Bottom */}
-          <div
-            style={{
-              borderTop: "1px solid rgba(255,255,255,0.08)",
-              marginTop: "3rem",
-              paddingTop: "1.5rem",
-              textAlign: "center",
-            }}
+          <Link
+            to="/register?role=organizer"
+            className="inline-block rounded bg-yellow-400 px-8 py-3 font-bold text-black transition-colors hover:bg-yellow-300"
           >
-            <p style={{ color: "#4b5563", fontSize: "0.75rem" }}>
-              © 2024 Evoria Celestial Platform. All celestial bodies reserved.
-            </p>
+            Become an Organizer
+          </Link>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="w-full border-t border-yellow-400/20 bg-slate-900 px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-8 grid grid-cols-2 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <div className="mb-3 flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-yellow-400">
+                  <div className="h-5 w-5 rounded-full bg-yellow-400"></div>
+                </div>
+                <span className="font-bold">EVORIA</span>
+              </div>
+              <p className="text-xs text-gray-400">Discover extraordinary events</p>
+            </div>
+
+            <div>
+              <h4 className="mb-3 font-bold">Explore</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>
+                  <Link to="/events" className="transition-colors hover:text-yellow-400">
+                    All Events
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/events" className="transition-colors hover:text-yellow-400">
+                    Categories
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="mb-3 font-bold">For Organizers</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>
+                  <Link
+                    to="/register?role=organizer"
+                    className="transition-colors hover:text-yellow-400"
+                  >
+                    Create Event
+                  </Link>
+                </li>
+                <li>
+                  <a href="#" className="transition-colors hover:text-yellow-400">
+                    Dashboard
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="mb-3 font-bold">Company</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>
+                  <a href="#" className="transition-colors hover:text-yellow-400">
+                    About Us
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="transition-colors hover:text-yellow-400">
+                    Privacy
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-yellow-400/20 pt-8 text-center text-sm text-gray-500">
+            <p>&copy; 2024 Evoria. All rights reserved.</p>
           </div>
         </div>
       </footer>

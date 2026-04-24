@@ -1,6 +1,5 @@
 import { MapPin, ArrowRight } from "lucide-react";
 import { Link } from "react-router";
-import { motion } from "motion/react";
 import type { Event } from "../types/event";
 
 interface EventCardProps {
@@ -15,121 +14,50 @@ const formatPrice = (price: number) => {
   }).format(price);
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
-  MUSIC: "#7c3aed",
-  SPORTS: "#16a34a",
-  FOOD: "#ea580c",
-  ART: "#db2777",
-  EDUCATION: "#2563eb",
-  OTHER: "#4b5563",
-};
-
 function EventCard({ event }: EventCardProps) {
-  const categoryColor = CATEGORY_COLORS[event.category] || "#4b5563";
+  const categoryColors: Record<string, string> = {
+    MUSIC: "from-purple-600 to-yellow-500",
+    SPORTS: "from-green-600 to-yellow-500",
+    FOOD: "from-pink-600 to-yellow-500",
+    ART: "from-teal-600 to-yellow-500",
+    EDUCATION: "from-blue-600 to-yellow-500",
+    OTHER: "from-gray-600 to-yellow-500",
+  };
+
+  const gradient = categoryColors[event.category] || categoryColors.OTHER;
 
   return (
-    <Link to={`/events/${event.id}`} style={{ textDecoration: "none" }}>
-      <motion.div
-        whileHover={{ y: -6, boxShadow: "0 24px 48px rgba(0,0,0,0.4)" }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ duration: 0.2 }}
-        style={{
-          borderRadius: "1rem",
-          overflow: "hidden",
-          cursor: "pointer",
-          background: "rgba(255,255,255,0.04)",
-          border: "1px solid rgba(255,255,255,0.08)",
-        }}
-      >
+    <Link to={`/event/${event.id}`}>
+      <div className="bg-slate-800/50 border border-yellow-400/30 rounded-lg overflow-hidden hover:border-yellow-400/60 transition-all duration-300 h-full flex flex-col group">
         {/* Image */}
-        <div style={{ position: "relative", height: "11rem", overflow: "hidden" }}>
-          {event.imageUrl ? (
-            <motion.img
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.4 }}
-              src={event.imageUrl}
-              alt={event.name}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          ) : (
-            <div style={{
-              width: "100%",
-              height: "100%",
-              background: "linear-gradient(135deg, #1e1b4b, #0f172a)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}>
-              <span style={{ fontSize: "2.5rem", color: "rgba(250,204,21,0.3)" }}>✦</span>
-            </div>
+        <div className={`h-40 bg-gradient-to-br ${gradient} overflow-hidden group-hover:scale-105 transition-transform duration-500`}>
+          {event.imageUrl && (
+            <img src={event.imageUrl} alt={event.name} className="w-full h-full object-cover" />
           )}
-          <span style={{
-            position: "absolute",
-            top: "0.75rem",
-            right: "0.75rem",
-            background: `${categoryColor}cc`,
-            color: "#ffffff",
-            fontSize: "0.7rem",
-            fontWeight: 600,
-            padding: "0.25rem 0.625rem",
-            borderRadius: "9999px",
-            backdropFilter: "blur(4px)",
-          }}>
-            {event.category}
-          </span>
         </div>
 
         {/* Content */}
-        <div style={{ padding: "1rem" }}>
-          <h3 style={{
-            color: "#ffffff",
-            fontWeight: 600,
-            fontSize: "0.9rem",
-            marginBottom: "0.5rem",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}>
+        <div className="p-4 flex-1 flex flex-col">
+          <h3 className="text-white font-bold text-sm mb-2 line-clamp-2 group-hover:text-yellow-300 transition-colors">
             {event.name}
           </h3>
 
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.375rem",
-            color: "#9ca3af",
-            fontSize: "0.75rem",
-            marginBottom: "1rem",
-          }}>
-            <MapPin size={11} />
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {event.location}
-            </span>
+          <div className="flex items-center gap-1 text-gray-400 text-xs mb-3">
+            <MapPin size={12} />
+            <span className="line-clamp-1">{event.location}</span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontWeight: 700, fontSize: "0.9rem", color: event.isFree ? "#4ade80" : "#ffffff" }}>
+          {/* Footer */}
+          <div className="flex justify-between items-center pt-3 border-t border-slate-700/50 mt-auto">
+            <span className={`font-bold text-sm ${event.isFree ? "text-green-400" : "text-yellow-400"}`}>
               {event.isFree ? "FREE" : formatPrice(event.price)}
             </span>
-            <motion.div
-              whileHover={{ scale: 1.15, background: "#facc15" }}
-              transition={{ duration: 0.2 }}
-              style={{
-                width: "1.75rem",
-                height: "1.75rem",
-                borderRadius: "9999px",
-                background: "rgba(250,204,21,0.08)",
-                border: "1px solid rgba(250,204,21,0.25)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <ArrowRight size={12} color="#facc15" />
-            </motion.div>
+            <div className="w-7 h-7 rounded-full bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center group-hover:bg-yellow-400 group-hover:border-yellow-400 transition-all">
+              <ArrowRight size={14} className="text-yellow-400 group-hover:text-black transition-colors" />
+            </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </Link>
   );
 }

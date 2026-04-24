@@ -16,22 +16,18 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (
+    if(
       error.response?.status === 401 &&
-      error.response?.data?.message === "Token Expired" &&
+      error.response?.data?.message === "Token Expired" && 
       !originalRequest._retry
     ) {
-      originalRequest._retry = true;
-
       try {
-        await refreshInstance.post("/auth/refresh");
+        await refreshInstance.post("/auth.refresh");
         return axiosInstance(originalRequest);
-      } catch (refreshError) {
+      } catch (error) {
         useAuth.getState().logout();
-        return Promise.reject(refreshError);
+        return Promise.reject(error);
       }
     }
-
-    return Promise.reject(error);
-  }
+  },
 );
