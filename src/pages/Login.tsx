@@ -45,7 +45,12 @@ function Login() {
     onSuccess: (data) => {
       login(data.user);
       toast.success(`Selamat datang, ${data.user.name.split(" ")[0]}!`);
-      navigate("/dashboard");
+      
+      if (data.user.role === "ORGANIZER") {
+        navigate("/dashboard");
+      } else {
+        navigate("/"); // atau halaman home/events untuk customer
+      }
     },
     onError: (error: AxiosError<{ message: string }>) => {
       toast.error(error.response?.data.message || "Login gagal!");
@@ -164,7 +169,7 @@ function Login() {
                 Sign in to <span className="text-shimmer">Evoria</span>
               </h1>
               <p style={{ fontSize: 12, color: "#8A8A9A", lineHeight: 1.6 }}>
-                Akses pengalaman eksklusif dan event pilihanmu.
+                Access your exclusive experiences and curated events.
               </p>
             </div>
 
@@ -181,7 +186,7 @@ function Login() {
                 id="email"
                 label="Email Address"
                 type="email"
-                placeholder="kamu@example.com"
+                placeholder="JohnDoe@example.com"
                 error={errors.email}
                 required
                 autoComplete="email"
@@ -192,7 +197,7 @@ function Login() {
                 id="password"
                 label="Password"
                 type="password"
-                placeholder="Password kamu"
+                placeholder="Your Password"
                 error={errors.password}
                 required
                 autoComplete="current-password"
@@ -220,17 +225,13 @@ function Login() {
                 }}
               >
                 <div
-                  onClick={() =>
-                    setValue("rememberMe", !rememberMe)
-                  }
+                  onClick={() => setValue("rememberMe", !rememberMe)}
                   style={{
                     width: 16,
                     height: 16,
                     borderRadius: 4,
                     border: `1px solid ${rememberMe ? "#D4A94A" : "#26262E"}`,
-                    background: rememberMe
-                      ? "rgba(212,169,74,0.2)"
-                      : "#1C1C22",
+                    background: rememberMe ? "rgba(212,169,74,0.2)" : "#1C1C22",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -240,12 +241,7 @@ function Login() {
                   }}
                 >
                   {rememberMe && (
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 10 10"
-                      fill="none"
-                    >
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                       <path
                         d="M2 5.5L4 7.5L8 3"
                         stroke="#D4A94A"
@@ -257,7 +253,7 @@ function Login() {
                   )}
                 </div>
                 <span style={{ fontSize: 11, color: "#8A8A9A" }}>
-                  Ingat saya
+                   Remember me
                 </span>
               </label>
 
@@ -269,7 +265,7 @@ function Login() {
                   textDecoration: "none",
                 }}
               >
-                Lupa password?
+                Forgot password?
               </Link>
             </div>
 
@@ -288,7 +284,7 @@ function Login() {
                     gap: 8,
                   }}
                 >
-                  Masuk <ArrowRight size={14} strokeWidth={2} />
+                  Login <ArrowRight size={14} strokeWidth={2} />
                 </span>
               </GoldButton>
             </div>
@@ -312,7 +308,7 @@ function Login() {
                   textTransform: "uppercase",
                 }}
               >
-                atau
+                OR
               </span>
               <div style={{ flex: 1, height: 0.5, background: "#1C1C22" }} />
             </div>
@@ -334,7 +330,7 @@ function Login() {
                     gap: 8,
                   }}
                 >
-                  <FcGoogle size={16} /> Lanjutkan dengan Google
+                  <FcGoogle size={16} /> Continue with Google
                 </span>
               </GoldButton>
             </div>
@@ -349,7 +345,7 @@ function Login() {
                 marginTop: 20,
               }}
             >
-              Belum punya akun?{" "}
+              Don't have an account?{" "}
               <Link
                 to="/register"
                 style={{
@@ -358,7 +354,7 @@ function Login() {
                   fontWeight: 500,
                 }}
               >
-                Daftar sekarang
+                Sign Up
               </Link>
             </p>
           </form>
