@@ -14,8 +14,12 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Home />,
+  },
+  {
+    path: "/register",
     element: <Register />,
   },
+
 ]);
 
 createRoot(document.getElementById("root")!).render(
