@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; }
 html, body, #root { height: 100%; }
 
 body {
@@ -25,6 +25,22 @@ input:-webkit-autofill:focus {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: shimmer 3s linear infinite;
+}
+
+.evoria-gold-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #D4A94A, #E8C97A);
+  color: #0D0D0F;
+  border: 1px solid rgba(232, 201, 122, 0.65);
+  box-shadow: 0 14px 35px rgba(212, 169, 74, 0.22);
+  text-decoration: none;
+}
+
+.evoria-gold-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 45px rgba(212, 169, 74, 0.32);
 }
 
 @keyframes shimmer {

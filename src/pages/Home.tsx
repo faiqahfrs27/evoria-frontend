@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
-import { useState } from "react";
 import { Music, Dumbbell, Utensils, Palette, BookOpen, MoreHorizontal } from "lucide-react";
 import Navbar from "../components/Navbar";
 import HeroCarousel from "../components/HeroCarousel";
@@ -11,52 +10,51 @@ import type { Event } from "../types/event";
 import type { PageableResponse } from "../types/pagination";
 
 function Home() {
-  const [page, setPage] = useState(1);
-
   const { data: events, isPending, error, refetch } = useQuery({
-    queryKey: ["events", page],
+    queryKey: ["events", 1],
     queryFn: async () => {
       const { data } = await axiosInstance.get<PageableResponse<Event>>("/events", {
-        params: { page, take: 6 },
+        params: { page: 1, take: 6 },
       });
       return data;
     },
   });
 
   const categories = [
-    { name: "Music", icon: Music },
-    { name: "Sports", icon: Dumbbell },
-    { name: "Food", icon: Utensils },
-    { name: "Art", icon: Palette },
-    { name: "Education", icon: BookOpen },
-    { name: "Other", icon: MoreHorizontal },
+    { name: "Music", value: "music", icon: Music },
+    { name: "Sports", value: "sports", icon: Dumbbell },
+    { name: "Food", value: "food", icon: Utensils },
+    { name: "Art", value: "art", icon: Palette },
+    { name: "Education", value: "education", icon: BookOpen },
+    { name: "Other", value: "other", icon: MoreHorizontal },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="evoria-shell min-h-screen text-[#F9F3E8]">
       <Navbar />
 
       {/* HERO SECTION WITH CAROUSEL */}
       <HeroCarousel />
 
       {/* CATEGORIES SECTION */}
-      <section className="w-full border-y border-yellow-400/20 bg-slate-900/30 px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center text-3xl font-bold sm:text-4xl lg:text-5xl">
-            Explore Categories
-          </h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6">
+      <section className="w-full border-y border-[rgba(212,169,74,0.14)] px-6 py-20 lg:px-8">
+        <div className="mx-auto max-w-[1080px]">
+          <div className="mb-12 text-center">
+            <h2 className="evoria-section-title text-4xl sm:text-5xl lg:text-6xl">
+              Explore <span className="text-shimmer">Categories</span>
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             {categories.map((cat) => {
               const IconComponent = cat.icon;
               return (
-                <Link
-                  key={cat.name}
-                  to={`/events?category=${cat.name.toLowerCase()}`}
-                  className="group"
-                >
-                  <div className="rounded border border-yellow-400/40 p-5 text-center transition-all hover:border-yellow-400 hover:bg-yellow-400/5">
-                    <IconComponent size={36} className="mx-auto mb-3 text-yellow-400/70 transition-colors group-hover:text-yellow-400" />
-                    <p className="text-sm font-semibold text-white transition-colors group-hover:text-yellow-300">
+                <Link key={cat.name} to={`/events?category=${cat.value}`} className="group">
+                  <div className="evoria-card rounded-[1rem] p-5 text-center transition duration-300 hover:-translate-y-1 hover:border-[rgba(212,169,74,0.46)] hover:bg-[rgba(212,169,74,0.045)]">
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(212,169,74,0.24)] bg-[rgba(212,169,74,0.045)] transition group-hover:border-[#D4A94A]/60">
+                      <IconComponent size={28} className="text-[#D4A94A] transition group-hover:scale-110" />
+                    </div>
+                    <p className="text-sm font-semibold text-[#F9F3E8] transition group-hover:text-[#E8C97A]">
                       {cat.name}
                     </p>
                   </div>
@@ -68,19 +66,23 @@ function Home() {
       </section>
 
       {/* FEATURED EVENTS SECTION */}
-      <section className="w-full px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-12 flex items-center justify-between">
-            <h2 className="text-3xl font-bold sm:text-4xl lg:text-5xl">Upcoming Experiences</h2>
-            <Link to="/events" className="whitespace-nowrap font-bold text-yellow-400 transition-colors hover:text-yellow-300">
+      <section className="w-full px-6 py-20 lg:px-8">
+        <div className="mx-auto max-w-[1152px]">
+          <div className="mb-12 flex items-end justify-between gap-6">
+            <div>
+              <h2 className="evoria-section-title text-4xl sm:text-5xl lg:text-6xl">
+                Upcoming Events
+              </h2>
+            </div>
+            <Link to="/events" className="hidden text-sm font-semibold text-[#D4A94A] transition hover:text-[#F5DFA0] sm:block">
               View all →
             </Link>
           </div>
 
           {error && (
-            <div className="mb-8 flex items-center justify-between rounded border border-red-700/50 bg-red-950/50 p-4 text-red-400">
+            <div className="mb-8 flex items-center justify-between rounded-[0.9rem] border border-red-500/35 bg-red-950/30 p-4 text-sm text-red-200">
               <span>Failed to load events</span>
-              <button onClick={() => refetch()} className="text-red-300 underline hover:text-red-200">
+              <button onClick={() => refetch()} className="text-red-100 underline-offset-4 hover:underline">
                 Retry
               </button>
             </div>
@@ -88,12 +90,14 @@ function Home() {
 
           {isPending ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map((i) => (
-                <EventCardSkeleton key={i} />
+              {[1, 2, 3].map((item) => (
+                <EventCardSkeleton key={item} />
               ))}
             </div>
           ) : events?.data.length === 0 ? (
-            <div className="py-16 text-center text-gray-400">No events available</div>
+            <div className="evoria-card rounded-[1.1rem] py-16 text-center text-sm text-[#8A8A9A]">
+              No events available
+            </div>
           ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {events?.data.map((event) => (
@@ -101,96 +105,63 @@ function Home() {
               ))}
             </div>
           )}
+
+          <Link to="/events" className="mt-8 block text-center text-sm font-semibold text-[#D4A94A] transition hover:text-[#F5DFA0] sm:hidden">
+            View all →
+          </Link>
         </div>
       </section>
 
       {/* JOIN ORGANIZER SECTION */}
-      <section className="w-full border-y border-yellow-400/20 bg-gradient-to-r from-purple-900/30 via-slate-900 to-teal-900/30 px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
+      <section className="w-full border-y border-[rgba(212,169,74,0.14)] px-6 py-20 lg:px-8">
+        <div className="mx-auto max-w-[900px] overflow-hidden rounded-[1.35rem] border border-[rgba(212,169,74,0.18)] bg-[radial-gradient(circle_at_20%_20%,rgba(212,169,74,0.13),transparent_30%),linear-gradient(135deg,rgba(28,28,34,0.92),rgba(13,13,15,0.94))] px-6 py-16 text-center shadow-[0_34px_90px_rgba(0,0,0,0.38)] sm:px-12">
+          <h2 className="evoria-section-title mb-4 text-4xl sm:text-5xl lg:text-6xl">
             Ready to Share Your Vision?
           </h2>
-          <p className="mx-auto mb-8 max-w-2xl text-base text-gray-300 sm:text-lg">
+          <p className="mx-auto mb-8 max-w-2xl text-sm leading-7 text-[#B9B1A5] sm:text-base">
             Create and manage your own events. Join thousands of organizers building incredible experiences.
           </p>
 
-          <Link
-            to="/register?role=organizer"
-            className="inline-block rounded bg-yellow-400 px-8 py-3 font-bold text-black transition-colors hover:bg-yellow-300"
-          >
+          <Link to="/register" className="evoria-gold-button inline-block rounded-sm px-9 py-3 text-sm font-bold tracking-[0.08em] transition hover:brightness-110">
             Become an Organizer
           </Link>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="w-full border-t border-yellow-400/20 bg-slate-900 px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
+      <footer className="w-full bg-[#14141A]/70 px-6 py-12 lg:px-8">
+        <div className="mx-auto max-w-[1152px]">
           <div className="mb-8 grid grid-cols-2 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <div className="mb-3 flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-yellow-400">
-                  <div className="h-5 w-5 rounded-full bg-yellow-400"></div>
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(212,169,74,0.75)]">
+                  <div className="h-3 w-3 rounded-full bg-[#D4A94A]" />
                 </div>
-                <span className="font-bold">EVORIA</span>
+                <span className="text-sm font-semibold tracking-[0.16em] text-[#F9F3E8]">EVORIA</span>
               </div>
-              <p className="text-xs text-gray-400">Discover extraordinary events</p>
+              <p className="text-xs text-[#8A8A9A]">Discover extraordinary events</p>
             </div>
 
             <div>
-              <h4 className="mb-3 font-bold">Explore</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  <Link to="/events" className="transition-colors hover:text-yellow-400">
-                    All Events
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/events" className="transition-colors hover:text-yellow-400">
-                    Categories
-                  </Link>
-                </li>
+              <h4 className="mb-4 text-sm font-semibold text-[#F9F3E8]">Explore</h4>
+              <ul className="space-y-3 text-sm text-[#8A8A9A]">
+                <li><Link to="/events" className="transition hover:text-[#D4A94A]">All Events</Link></li>
+                <li><Link to="/events" className="transition hover:text-[#D4A94A]">Categories</Link></li>
               </ul>
             </div>
 
-            <div>
-              <h4 className="mb-3 font-bold">For Organizers</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  <Link
-                    to="/register?role=organizer"
-                    className="transition-colors hover:text-yellow-400"
-                  >
-                    Create Event
-                  </Link>
-                </li>
-                <li>
-                  <a href="#" className="transition-colors hover:text-yellow-400">
-                    Dashboard
-                  </a>
-                </li>
-              </ul>
-            </div>
 
             <div>
-              <h4 className="mb-3 font-bold">Company</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>
-                  <a href="#" className="transition-colors hover:text-yellow-400">
-                    About Us
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="transition-colors hover:text-yellow-400">
-                    Privacy
-                  </a>
-                </li>
+              <h4 className="mb-4 text-sm font-semibold text-[#F9F3E8]">Evoria Support</h4>
+              <ul className="space-y-3 text-sm text-[#8A8A9A]">
+                <li><a href="#" className="transition hover:text-[#D4A94A]">E-mail : help@evoria.id</a></li>
+                <li><a href="#" className="transition hover:text-[#D4A94A]">Privacy</a></li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-yellow-400/20 pt-8 text-center text-sm text-gray-500">
-            <p>&copy; 2024 Evoria. All rights reserved.</p>
+          <div className="border-t border-[rgba(212,169,74,0.14)] pt-8 text-center text-xs text-[#6F6F7D]">
+            <p>&copy; 2026 Evoria. All rights reserved.</p>
           </div>
         </div>
       </footer>
