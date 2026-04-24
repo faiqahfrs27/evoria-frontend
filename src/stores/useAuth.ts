@@ -3,11 +3,11 @@ import { persist } from "zustand/middleware";
 import { axiosInstance } from "../lib/axios";
 
 interface UserAuth {
-  id: number;
+  id: string;      
   name: string;
   email: string;
-  image: string | null;
-  role: string;
+  profilePic: string | null;
+  role: string;    
 }
 
 type Store = {
