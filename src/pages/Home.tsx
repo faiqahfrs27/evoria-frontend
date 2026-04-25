@@ -122,7 +122,7 @@ function Home() {
             Create and manage your own events. Join thousands of organizers building incredible experiences.
           </p>
 
-          <Link to="/register" className="evoria-gold-button inline-block rounded-sm px-9 py-3 text-sm font-bold tracking-[0.08em] transition hover:brightness-110">
+          <Link to="/register/organizer" className="evoria-gold-button inline-block rounded-sm px-9 py-3 text-sm font-bold tracking-[0.08em] transition hover:brightness-110">
             Become an Organizer
           </Link>
         </div>
