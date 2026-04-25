@@ -16,7 +16,7 @@ const formatPrice = (price: number) => {
 
 function EventCard({ event }: EventCardProps) {
   return (
-    <Link to={`/event/${event.id}`} className="group block h-full">
+    <Link to={`/events/${event.slug || event.id}`} className="group block h-full">
       <article className="evoria-card flex h-full flex-col overflow-hidden rounded-[1.1rem] transition duration-300 hover:-translate-y-1 hover:border-[rgba(212,169,74,0.42)]">
         <div className="relative h-44 overflow-hidden bg-[#1C1C22]">
           {event.imageUrl ? (

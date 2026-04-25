@@ -29,4 +29,17 @@ export interface Event {
   ticketTypes: TicketType[];
   createdAt: string;
   updatedAt: string;
+  vouchers?: Voucher[];
 }
+
+export type Voucher = {
+  id: string;
+  code: string;
+  discountAmount?: number;
+  discount?: number;
+  discountValue?: number;
+  value?: number;
+  quota?: number;
+  startDate?: string;
+  endDate?: string;
+};

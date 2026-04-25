@@ -21,12 +21,12 @@ function Home() {
   });
 
   const categories = [
-    { name: "Music", value: "music", icon: Music },
-    { name: "Sports", value: "sports", icon: Dumbbell },
-    { name: "Food", value: "food", icon: Utensils },
-    { name: "Art", value: "art", icon: Palette },
-    { name: "Education", value: "education", icon: BookOpen },
-    { name: "Other", value: "other", icon: MoreHorizontal },
+    { name: "Music", value: "MUSIC", icon: Music },
+    { name: "Sports", value: "SPORTS", icon: Dumbbell },
+    { name: "Food", value: "FOOD", icon: Utensils },
+    { name: "Art", value: "ART", icon: Palette },
+    { name: "Education", value: "EDUCATION", icon: BookOpen },
+    { name: "Other", value: "OTHER", icon: MoreHorizontal },
   ];
 
   return (
