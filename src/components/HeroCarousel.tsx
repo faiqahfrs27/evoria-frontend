@@ -70,7 +70,7 @@ function HeroCarousel() {
             return (
               <Link
                 key={event.id}
-                to={`/event/${event.id}`}
+                to={`/events/${event.slug || event.id}`}
                 className={`absolute inset-0 transition-opacity duration-1000 ${
                   isActive ? "opacity-100" : "opacity-0"
                 }`}

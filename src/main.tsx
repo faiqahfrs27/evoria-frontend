@@ -10,6 +10,8 @@ import Home from "./pages/Home";
 import Register from "./pages/Register";
 import { useAuth } from "./stores/useAuth";
 import Dashboard from "./pages/Dashboard";
+import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +26,14 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Home />,
+  },
+    {
+    path: "/events",
+    element: <Events />,
+  },
+  {
+    path: "/events/:slug",
+    element: <EventDetail />,
   },
   {
     path: "/register",
