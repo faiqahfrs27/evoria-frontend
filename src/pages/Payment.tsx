@@ -184,6 +184,69 @@ function Payment() {
   const canWriteReview =
     transaction.status === "DONE" && eventHasEnded && !reviewSubmitted;
 
+  const pageHeader = (() => {
+    if (transaction.status === "WAITING_FOR_PAYMENT") {
+      return {
+        label: "Payment",
+        title: "Complete Your Payment",
+        description:
+          "Upload your payment proof before the deadline. After the proof is uploaded, the transaction will wait for organizer confirmation.",
+      };
+    }
+
+    if (transaction.status === "WAITING_FOR_ADMIN_CONFIRMATION") {
+      return {
+        label: "Payment Submitted",
+        title: "Waiting for Organizer Confirmation",
+        description:
+          "Your payment proof has been uploaded. Please wait while the organizer reviews your transaction.",
+      };
+    }
+
+    if (transaction.status === "DONE") {
+      return {
+        label: "Transaction Completed",
+        title: "Your Payment Has Been Confirmed",
+        description: eventHasEnded
+          ? "This event has ended. You can now share your experience by writing a review."
+          : "Your ticket purchase is confirmed. You can write a review after the event has ended.",
+      };
+    }
+
+    if (transaction.status === "REJECTED") {
+      return {
+        label: "Payment Rejected",
+        title: "Your Payment Was Rejected",
+        description:
+          "Your payment proof was rejected. Please check your transaction status or contact the organizer for more information.",
+      };
+    }
+
+    if (transaction.status === "EXPIRED") {
+      return {
+        label: "Transaction Expired",
+        title: "Payment Time Has Expired",
+        description:
+          "This transaction expired because the payment proof was not uploaded before the deadline.",
+      };
+    }
+
+    if (transaction.status === "CANCELED") {
+      return {
+        label: "Transaction Canceled",
+        title: "This Transaction Was Canceled",
+        description:
+          "This transaction is no longer active. Any eligible seats, points, or vouchers should be restored according to the system rules.",
+      };
+    }
+
+    return {
+      label: "Transaction",
+      title: "Transaction Detail",
+      description: "Review your transaction information below.",
+    };
+  })();
+
   return (
     <div className="min-h-screen bg-[#0D0D0F] text-[#F9F3E8]">
       <Navbar />
@@ -191,12 +254,13 @@ function Payment() {
       <main className="mx-auto max-w-[950px] px-6 pb-20 pt-28 lg:px-8">
         <div className="mb-7">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#D4A94A]">
-            Payment
+            {pageHeader.label}
           </p>
-          <h1 className="mt-2 text-2xl font-bold">Complete Your Payment</h1>
+
+          <h1 className="mt-2 text-2xl font-bold">{pageHeader.title}</h1>
+
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#B9B1A5]">
-            Upload your payment proof before the deadline. After the proof is
-            uploaded, the transaction will wait for organizer confirmation.
+            {pageHeader.description}
           </p>
         </div>
 
@@ -331,20 +395,52 @@ function Payment() {
           </section>
 
           <aside className="h-fit rounded-[1.1rem] border border-[rgba(212,169,74,0.14)] bg-[#0D0D0F] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.35)]">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(212,169,74,0.28)] bg-[rgba(212,169,74,0.08)]">
-                <Clock size={18} className="text-[#D4A94A]" />
-              </div>
+            {transaction.status === "WAITING_FOR_PAYMENT" ? (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(212,169,74,0.28)] bg-[rgba(212,169,74,0.08)]">
+                    <Clock size={18} className="text-[#D4A94A]" />
+                  </div>
 
-              <div>
-                <p className="text-xs text-[#8A8A9A]">Remaining time</p>
-                <p className="font-bold text-[#F9F3E8]">{remainingTime}</p>
-              </div>
-            </div>
+                  <div>
+                    <p className="text-xs text-[#8A8A9A]">Remaining time</p>
+                    <p className="font-bold text-[#F9F3E8]">{remainingTime}</p>
+                  </div>
+                </div>
 
-            <p className="mt-3 text-xs leading-5 text-[#8A8A9A]">
-              Deadline: {formatDateTime(transaction.paymentDeadline)}
-            </p>
+                <p className="mt-3 text-xs leading-5 text-[#8A8A9A]">
+                  Deadline: {formatDateTime(transaction.paymentDeadline)}
+                </p>
+              </>
+            ) : (
+              <div className="rounded-[0.9rem] border border-[rgba(212,169,74,0.14)] bg-[#14141A]/70 p-4">
+                <p className="text-xs text-[#8A8A9A]">Payment Status</p>
+                <p className="mt-1 font-bold text-[#D4A94A]">
+                  {transaction.status}
+                </p>
+
+                {transaction.status === "DONE" && (
+                  <p className="mt-2 text-xs leading-5 text-[#B9B1A5]">
+                    Your payment has been confirmed.
+                  </p>
+                )}
+
+                {transaction.status === "WAITING_FOR_ADMIN_CONFIRMATION" && (
+                  <p className="mt-2 text-xs leading-5 text-[#B9B1A5]">
+                    Your payment proof has been uploaded and is waiting for
+                    organizer confirmation.
+                  </p>
+                )}
+
+                {["REJECTED", "EXPIRED", "CANCELED"].includes(
+                  transaction.status,
+                ) && (
+                  <p className="mt-2 text-xs leading-5 text-[#B9B1A5]">
+                    This transaction is no longer active.
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="mt-6 border-t border-[rgba(212,169,74,0.14)] pt-5">
               <div className="flex justify-between text-sm">
