@@ -68,7 +68,15 @@ function Navbar() {
       <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(212,169,74,0.75)]">
         <div className="h-3 w-3 rounded-full bg-[#D4A94A] shadow-[0_0_22px_rgba(212,169,74,0.45)]" />
       </div>
-      <span className="text-[13px] font-semibold tracking-[0.18em] text-[#F9F3E8] sm:text-sm">
+      <span
+        className="text-[13px] font-semibold tracking-[0.18em] text-[#F9F3E8] sm:text-sm"
+        style={{
+          fontFamily: "'Cormorant Garamond', serif",
+          fontSize: 18,
+          letterSpacing: "0.15em",
+          color: "#F9F3E8",
+        }}
+      >
         EVORIA
       </span>
     </Link>
