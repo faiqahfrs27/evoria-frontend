@@ -15,6 +15,7 @@ import {
   ChangePasswordTab,
   CreateEventTab,
   EventsTab,
+  ManualPaymentsTab,
   OverviewTab,
   PlaceholderTab,
   ProfileTab,
@@ -73,7 +74,7 @@ export default function Dashboard() {
         setSelectedEventId={setSelectedEventId}
       />
     ),
-    "create-event": <CreateEventTab/>,
+    "create-event": <CreateEventTab />,
     transactions: (
       <TransactionsTab
         events={events}
@@ -82,7 +83,14 @@ export default function Dashboard() {
         setSelectedEventId={setSelectedEventId}
       />
     ),
-    "manual-payments": <PlaceholderTab title="Manual Payments" />,
+    "manual-payments": (
+      <ManualPaymentsTab
+        events={events}
+        transactions={transactions}
+        selectedEventId={selectedEventId}
+        setSelectedEventId={setSelectedEventId}
+      />
+    ),
     tickets: <PlaceholderTab title="Tickets" />,
     "create-ticket": <PlaceholderTab title="Create Ticket" />,
     vouchers: <PlaceholderTab title="Vouchers" />,

@@ -1,22 +1,21 @@
-import { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "react-router";
+import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowLeft,
   CalendarDays,
   Clock,
   MapPin,
-  User,
-  Ticket,
   Minus,
   Plus,
-  ArrowLeft,
+  Ticket,
 } from "lucide-react";
+import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import { Link, useNavigate, useParams } from "react-router";
+import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import { axiosInstance } from "../lib/axios";
 import type { Event } from "../types/event";
-import Footer from "../components/Footer";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("id-ID", {
