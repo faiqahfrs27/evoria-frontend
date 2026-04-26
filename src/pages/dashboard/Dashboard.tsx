@@ -73,7 +73,7 @@ export default function Dashboard() {
         setSelectedEventId={setSelectedEventId}
       />
     ),
-    "create-event": <CreateEventTab />,
+    "create-event": <CreateEventTab/>,
     transactions: (
       <TransactionsTab
         events={events}

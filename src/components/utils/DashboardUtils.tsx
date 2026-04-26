@@ -52,7 +52,7 @@ export const cardStyle: React.CSSProperties = {
   background: "#12121A",
   border: "1px solid rgba(212,169,74,0.12)",
   borderRadius: 8,
-  padding: "24px",
+  padding: "24px"
 };
 
 export const goldBtn: React.CSSProperties = {

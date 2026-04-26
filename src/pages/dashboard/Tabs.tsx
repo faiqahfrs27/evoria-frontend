@@ -648,12 +648,16 @@ export function AttendeesTab({
 
 // ─── Profile ──────────────────────────────────────────────────────────────────
 export function ProfileTab() {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const [name, setName] = useState(user?.name ?? "");
 
   const updateMutation = useMutation({
-    mutationFn: () => axiosInstance.patch("/profile", { name }),
-    onSuccess: () => toast.success("Profile updated"),
+    mutationFn: () =>
+      axiosInstance.put("/dashboard/organizer/profile", { name }),
+    onSuccess: (res) => {
+      toast.success("Profile updated");
+      if (user) login({ ...user, name: res.data.data.name });
+    },
     onError: () => toast.error("Failed"),
   });
 
@@ -661,11 +665,14 @@ export function ProfileTab() {
     mutationFn: (file: File) => {
       const fd = new FormData();
       fd.append("profilePic", file);
-      return axiosInstance.patch("/profile/picture", fd, {
+      return axiosInstance.patch("/dashboard/organizer/profile/picture", fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
     },
-    onSuccess: () => toast.success("Picture updated"),
+    onSuccess: (res) => {
+      toast.success("Picture updated");
+      if (user) login({ ...user, profilePic: res.data.data.profilePic });
+    },
     onError: () => toast.error("Failed to upload"),
   });
 
@@ -769,7 +776,8 @@ export function ChangePasswordTab() {
   });
 
   const mutation = useMutation({
-    mutationFn: () => axiosInstance.put("/profile/change-password", form),
+    mutationFn: () =>
+      axiosInstance.put("/dashboard/organizer/profile/change-password", form),
     onSuccess: () => {
       toast.success("Password changed");
       setForm({ currentPassword: "", newPassword: "", confirmNewPassword: "" });
@@ -780,7 +788,6 @@ export function ChangePasswordTab() {
   return (
     <div style={{ maxWidth: 460 }}>
       <div style={cardStyle}>
-        <p style={{ ...labelStyle, marginBottom: 16 }}>Change Password</p>
         <div style={{ display: "grid", gap: 12 }}>
           {[
             { key: "currentPassword", label: "Current Password" },
@@ -1343,7 +1350,6 @@ export function CreateEventTab() {
               onChange={(e) => setThumbnail(e.target.files?.[0] || null)}
               style={inputStyle}
             />
-           
           </div>
 
           <div
