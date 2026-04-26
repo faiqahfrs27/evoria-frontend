@@ -8,6 +8,7 @@ import EventCardSkeleton from "../components/EventCardSkeleton";
 import { axiosInstance } from "../lib/axios";
 import type { Event } from "../types/event";
 import type { PageableResponse } from "../types/pagination";
+import Footer from "../components/Footer";
 
 const categories = [
   { label: "All Categories", value: "" },
@@ -228,6 +229,7 @@ function Events() {
           </button>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

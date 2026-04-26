@@ -9,6 +9,7 @@ export interface Organizer {
   id: string;
   name: string;
   email: string;
+  profilePic?: string | null;
 }
 
 export interface Event {
