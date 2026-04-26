@@ -42,10 +42,10 @@ function EventCard({ event }: EventCardProps) {
           <img
             src={event.imageUrl}
             alt={event.name}
-            className="h-[175px] w-full object-cover transition duration-500 group-hover:scale-105"
+            className="h-43.75 w-full object-cover transition duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="h-[175px] w-full bg-[radial-gradient(circle_at_25%_25%,rgba(212,169,74,0.22),transparent_28%),linear-gradient(135deg,#14141A,#0D0D0F)]" />
+          <div className="h-43.75 w-full bg-[radial-gradient(circle_at_25%_25%,rgba(212,169,74,0.22),transparent_28%),linear-gradient(135deg,#14141A,#0D0D0F)]" />
         )}
 
         <div className="absolute left-4 top-4 rounded-full border border-[rgba(212,169,74,0.28)] bg-[#0D0D0F]/80 px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#D4A94A] backdrop-blur">

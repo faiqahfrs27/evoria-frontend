@@ -38,10 +38,10 @@ function HeroCarousel() {
   if (isPending || events.length === 0) {
     return (
       <section className="px-6 pb-14 pt-24 lg:px-8">
-        <div className="mx-auto max-w-[1280px]">
-          <div className="relative h-[255px] overflow-hidden rounded-[1.35rem] border border-[rgba(212,169,74,0.12)] bg-[#14141A] shadow-[0_30px_90px_rgba(0,0,0,0.38)] sm:h-[310px] lg:h-[340px]">
+        <div className="mx-auto max-w-7xl">
+          <div className="relative h-63.75 overflow-hidden rounded-[1.35rem] border border-[rgba(212,169,74,0.12)] bg-[#14141A] shadow-[0_30px_90px_rgba(0,0,0,0.38)] sm:h-77.5 lg:h-85">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(212,169,74,0.10),transparent_28%),radial-gradient(circle_at_80%_75%,rgba(255,255,255,0.035),transparent_28%)]" />
-            <div className="absolute inset-x-10 bottom-10 h-px bg-gradient-to-r from-transparent via-[rgba(212,169,74,0.24)] to-transparent" />
+            <div className="absolute inset-x-10 bottom-10 h-px bg-linear-to-r from-transparent via-[rgba(212,169,74,0.24)] to-transparent" />
           </div>
         </div>
       </section>
@@ -62,8 +62,8 @@ function HeroCarousel() {
 
   return (
     <section className="px-6 pb-14 pt-24 lg:px-8">
-      <div className="mx-auto max-w-[1280px]">
-        <div className="relative h-[255px] overflow-hidden rounded-[1.35rem] border border-[rgba(212,169,74,0.14)] bg-[#14141A] shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:h-[310px] lg:h-[340px]">
+      <div className="mx-auto max-w-7xl">
+        <div className="relative h-63.75 overflow-hidden rounded-[1.35rem] border border-[rgba(212,169,74,0.14)] bg-[#14141A] shadow-[0_30px_90px_rgba(0,0,0,0.42)] sm:h-77.5 lg:h-85">
           {events.map((event, index) => {
             const isActive = index === currentSlide;
 

@@ -116,7 +116,7 @@ function Navbar() {
   return (
     <>
       <nav className="fixed left-0 right-0 top-0 z-50 border-b border-[rgba(212,169,74,0.16)] bg-[#0D0D0F]/90 backdrop-blur-xl">
-        <div className="mx-auto max-w-[1280px] px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
           {/* Main bar */}
           <div className="flex h-20 items-center justify-between gap-6">
             {logo}
@@ -145,7 +145,7 @@ function Navbar() {
                 </button>
 
                 {categoryOpen && (
-                  <div className="absolute left-1/2 top-6 w-56 -translate-x-1/2 rounded-[1rem] border border-[rgba(212,169,74,0.18)] bg-[#111116]/95 p-2 shadow-[0_24px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+                  <div className="absolute left-1/2 top-6 w-56 -translate-x-1/2 rounded-2xl border border-[rgba(212,169,74,0.18)] bg-[#111116]/95 p-2 shadow-[0_24px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl">
                     <div className="mb-2 border-b border-[rgba(212,169,74,0.12)] px-3 py-2">
                       <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#D4A94A]">
                         Browse by
@@ -161,7 +161,7 @@ function Navbar() {
                         navigate("/events");
                         setCategoryOpen(false);
                       }}
-                      className="group flex w-full items-center justify-between rounded-[0.75rem] px-3 py-2.5 text-left text-sm text-[#F9F3E8] transition hover:bg-[rgba(212,169,74,0.1)]"
+                      className="group flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm text-[#F9F3E8] transition hover:bg-[rgba(212,169,74,0.1)]"
                     >
                       <span>All Categories</span>
                       <span className="h-1.5 w-1.5 rounded-full bg-[#D4A94A]/60 opacity-0 transition group-hover:opacity-100" />
@@ -172,7 +172,7 @@ function Navbar() {
                         key={cat.value}
                         type="button"
                         onClick={() => goToCategory(cat.value)}
-                        className="group flex w-full items-center justify-between rounded-[0.75rem] px-3 py-2.5 text-left text-sm text-[#B9B1A5] transition hover:bg-[rgba(212,169,74,0.1)] hover:text-[#F9F3E8]"
+                        className="group flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm text-[#B9B1A5] transition hover:bg-[rgba(212,169,74,0.1)] hover:text-[#F9F3E8]"
                       >
                         <span>{cat.label}</span>
                         <span className="h-1.5 w-1.5 rounded-full bg-[#D4A94A]/60 opacity-0 transition group-hover:opacity-100" />
@@ -316,7 +316,7 @@ function Navbar() {
               </Link>
 
               {/* Mobile categories */}
-              <div className="rounded-[1rem] border border-[rgba(212,169,74,0.14)] bg-[#14141A]/60 p-3">
+              <div className="rounded-2xl border border-[rgba(212,169,74,0.14)] bg-[#14141A]/60 p-3">
                 <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#D4A94A]">
                   Categories
                 </p>

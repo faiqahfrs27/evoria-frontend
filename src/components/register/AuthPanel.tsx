@@ -51,7 +51,7 @@ export default function AuthPanel({
         {/* Logo */}
         <div className="flex items-center gap-3">
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
             style={{ border: "1px solid rgba(212,169,74,0.6)" }}
           >
             <div
@@ -115,7 +115,7 @@ export default function AuthPanel({
           </div>
 
           {/* Divider */}
-          <div className="flex items-center gap-4 w-full max-w-[200px]">
+          <div className="flex items-center gap-4 w-full max-w-50">
             <div
               className="flex-1 h-px"
               style={{

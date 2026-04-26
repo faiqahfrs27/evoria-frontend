@@ -5,16 +5,19 @@ import { createRoot } from "react-dom/client";
 import { Toaster } from "react-hot-toast";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import "./index.css";
-import Login from "./pages/Login";
-import Home from "./pages/Home";
-import Register from "./pages/Register";
-import { useAuth } from "./stores/useAuth";
-import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
-import Payment from "./pages/Payment";
-import Dashboard from "./pages/dashboard/Dashboard";
-import OrganizerProfile from "./pages/OrganizerProfile";
+import Events from "./pages/Events";
 import HistoryTransaction from "./pages/HistoryTransaction";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import OrganizerProfile from "./pages/OrganizerProfile";
+import Payment from "./pages/Payment";
+import ProfilePage from "./pages/Profile";
+import Register from "./pages/Register";
+import Dashboard from "./pages/dashboard/Dashboard";
+import { useAuth } from "./stores/useAuth";
+import ResetPasswordModal from "./pages/ResetPasswordModal";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +68,10 @@ const router = createBrowserRouter([
     element: <Login />,
   },
   {
+    path: "/reset-password/:token",
+    element: <ResetPasswordModal />,
+  },
+  {
     path: "/dashboard",
     element: (
       <OrganizerRoute>
@@ -86,12 +93,24 @@ const router = createBrowserRouter([
     ],
   },
   {
+    path: "/profile",
+    element: (
+      <PrivateRoute>
+        <ProfilePage />
+      </PrivateRoute>
+    ),
+  },
+  {
     path: "/transactions",
     element: (
       <PrivateRoute>
         <HistoryTransaction />
       </PrivateRoute>
     ),
+  },
+  {
+    path: "*",
+    element: <NotFound />,
   },
 ]);
 

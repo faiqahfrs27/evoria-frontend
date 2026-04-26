@@ -419,6 +419,8 @@ export function TransactionsTab({
     onSuccess: () => {
       toast.success("Accepted");
       qc.invalidateQueries({ queryKey: ["dashboard", "transactions"] });
+      qc.invalidateQueries({ queryKey: ["profile"] });
+      qc.invalidateQueries({ queryKey: ["my-points"] });
     },
     onError: () => toast.error("Failed to accept"),
   });
@@ -636,6 +638,8 @@ export function ManualPaymentsTab({
     onSuccess: () => {
       toast.success("Rejected");
       qc.invalidateQueries({ queryKey: ["dashboard", "transactions"] });
+      qc.invalidateQueries({ queryKey: ["profile"] });
+      qc.invalidateQueries({ queryKey: ["my-points"] });
     },
     onError: () => toast.error("Failed to reject"),
   });

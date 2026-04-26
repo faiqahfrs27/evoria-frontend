@@ -61,12 +61,12 @@ function Register({ role = "USER" }: { role?: "USER" | "ORGANIZER" }) {
     },
     onSuccess: (data) => {
       setAuth(data.user);
-      toast.success("Akun berhasil dibuat. Selamat datang!");
+      toast.success("Register Success. Welcome to Evoria");
       navigate("/login");
     },
     onError: (error: AxiosError<{ message: string }>) => {
       console.log("Error response:", error.response);
-      toast.error(error.response?.data.message || "Registrasi gagal!");
+      toast.error(error.response?.data.message || "Register failed!");
     },
   });
 
@@ -84,7 +84,7 @@ function Register({ role = "USER" }: { role?: "USER" | "ORGANIZER" }) {
         background: "#0D0D0F",
       }}
     >
-      <AuthPanel quote="Dibuat untuk mereka yang mencari keindahan dalam hal yang luar biasa." />
+      <AuthPanel quote="Every extraordinary journey begins with a single, decisive step." />
 
       {/* Form side */}
       <div
