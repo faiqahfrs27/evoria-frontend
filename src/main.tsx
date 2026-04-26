@@ -14,6 +14,7 @@ import EventDetail from "./pages/EventDetail";
 import Payment from "./pages/Payment";
 import Dashboard from "./pages/dashboard/Dashboard";
 import OrganizerProfile from "./pages/OrganizerProfile";
+import HistoryTransaction from "./pages/HistoryTransaction";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,12 @@ function OrganizerRoute({ children }: { children: React.ReactNode }) {
   const user = useAuth((s) => s.user);
   if (!user) return <Navigate to="/login" />;
   if (user.role !== "ORGANIZER") return <Navigate to="/" />;
+  return <>{children}</>;
+}
+
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const user = useAuth((s) => s.user);
+  if (!user) return <Navigate to="/login" />;
   return <>{children}</>;
 }
 
@@ -77,6 +84,14 @@ const router = createBrowserRouter([
       { path: "profile", element: <></> },
       { path: "change-password", element: <></> },
     ],
+  },
+  {
+    path: "/transactions",
+    element: (
+      <PrivateRoute>
+        <HistoryTransaction />
+      </PrivateRoute>
+    ),
   },
 ]);
 

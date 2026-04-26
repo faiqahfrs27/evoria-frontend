@@ -80,7 +80,11 @@ function Navbar() {
     <Link to="/profile">
       <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[rgba(212,169,74,0.45)] bg-[rgba(212,169,74,0.08)]">
         {user?.profilePic ? (
-          <img src={user.profilePic} alt={user.name} className="h-full w-full object-cover" />
+          <img
+            src={user.profilePic}
+            alt={user.name}
+            className="h-full w-full object-cover"
+          />
         ) : (
           <User size={15} className="text-[#D4A94A]" />
         )}
@@ -92,7 +96,6 @@ function Navbar() {
     <>
       <nav className="fixed left-0 right-0 top-0 z-50 border-b border-[rgba(212,169,74,0.16)] bg-[#0D0D0F]/90 backdrop-blur-xl">
         <div className="mx-auto max-w-[1280px] px-6 lg:px-8">
-
           {/* Main bar */}
           <div className="flex h-20 items-center justify-between gap-6">
             {logo}
@@ -126,12 +129,17 @@ function Navbar() {
                       <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#D4A94A]">
                         Browse by
                       </p>
-                      <p className="mt-1 text-xs text-[#8A8A9A]">Event category</p>
+                      <p className="mt-1 text-xs text-[#8A8A9A]">
+                        Event category
+                      </p>
                     </div>
 
                     <button
                       type="button"
-                      onClick={() => { navigate("/events"); setCategoryOpen(false); }}
+                      onClick={() => {
+                        navigate("/events");
+                        setCategoryOpen(false);
+                      }}
                       className="group flex w-full items-center justify-between rounded-[0.75rem] px-3 py-2.5 text-left text-sm text-[#F9F3E8] transition hover:bg-[rgba(212,169,74,0.1)]"
                     >
                       <span>All Categories</span>
@@ -158,7 +166,10 @@ function Navbar() {
             <div className="hidden items-center gap-3 sm:flex">
               {/* Search */}
               <div className="relative">
-                <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#D4A94A]/65" />
+                <Search
+                  size={14}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#D4A94A]/65"
+                />
                 <input
                   type="text"
                   placeholder="Search..."
@@ -171,7 +182,10 @@ function Navbar() {
 
               {/* Location */}
               <div className="relative hidden lg:block">
-                <MapPin size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#D4A94A]/65" />
+                <MapPin
+                  size={14}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#D4A94A]/65"
+                />
                 <input
                   type="text"
                   placeholder="Location..."
@@ -186,6 +200,15 @@ function Navbar() {
               {user ? (
                 <>
                   {userAvatar}
+                  {user.role === "USER" && (
+                    <Link
+                      to="/transactions"
+                      className="text-xs tracking-[0.08em] text-[#8A8A9A] transition hover:text-[#D4A94A]"
+                    >
+                      My Orders
+                    </Link>
+                  )}
+
                   {user.role === "ORGANIZER" && (
                     <Link
                       to="/dashboard"
@@ -233,7 +256,10 @@ function Navbar() {
             <div className="space-y-4 border-t border-[rgba(212,169,74,0.16)] bg-[#0D0D0F] py-5 sm:hidden">
               {/* Search */}
               <div className="relative">
-                <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#D4A94A]/65" />
+                <Search
+                  size={14}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#D4A94A]/65"
+                />
                 <input
                   type="text"
                   placeholder="Search..."
@@ -246,7 +272,10 @@ function Navbar() {
 
               {/* Location */}
               <div className="relative">
-                <MapPin size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#D4A94A]/65" />
+                <MapPin
+                  size={14}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#D4A94A]/65"
+                />
                 <input
                   type="text"
                   placeholder="Location..."
@@ -273,7 +302,10 @@ function Navbar() {
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => { navigate("/events"); setMobileOpen(false); }}
+                    onClick={() => {
+                      navigate("/events");
+                      setMobileOpen(false);
+                    }}
                     className="rounded-sm border border-[rgba(212,169,74,0.18)] px-3 py-2 text-left text-xs text-[#F9F3E8]"
                   >
                     All
@@ -301,6 +333,16 @@ function Navbar() {
                   >
                     Profile
                   </Link>
+                  {user.role === "USER" && (
+                    <Link
+                      to="/transactions"
+                      onClick={() => setMobileOpen(false)}
+                      className="block text-xs tracking-[0.08em] text-[#8A8A9A]"
+                    >
+                      My Orders
+                    </Link>
+                  )}
+
                   {user.role === "ORGANIZER" && (
                     <Link
                       to="/dashboard"
@@ -311,7 +353,10 @@ function Navbar() {
                     </Link>
                   )}
                   <button
-                    onClick={() => { setShowLogout(true); setMobileOpen(false); }}
+                    onClick={() => {
+                      setShowLogout(true);
+                      setMobileOpen(false);
+                    }}
                     className="flex items-center gap-1.5 text-xs tracking-[0.08em] text-[#8A8A9A]"
                   >
                     <LogOut size={13} /> Logout
@@ -343,7 +388,10 @@ function Navbar() {
       <LogoutModal
         isOpen={showLogout}
         onClose={() => setShowLogout(false)}
-        onConfirm={() => { logout(); setShowLogout(false); }}
+        onConfirm={() => {
+          logout();
+          setShowLogout(false);
+        }}
       />
     </>
   );
