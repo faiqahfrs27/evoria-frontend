@@ -14,12 +14,14 @@ import {
   AttendeesTab,
   ChangePasswordTab,
   CreateEventTab,
+  CreateVoucherTab,
   EventsTab,
   ManualPaymentsTab,
   OverviewTab,
   PlaceholderTab,
   ProfileTab,
   TransactionsTab,
+  VouchersTab,
 } from "./Tabs";
 import { useLocation, useNavigate } from "react-router";
 
@@ -93,8 +95,8 @@ export default function Dashboard() {
     ),
     tickets: <PlaceholderTab title="Tickets" />,
     "create-ticket": <PlaceholderTab title="Create Ticket" />,
-    vouchers: <PlaceholderTab title="Vouchers" />,
-    "create-voucher": <PlaceholderTab title="Create Voucher" />,
+    vouchers: <VouchersTab events={events} />,
+    "create-voucher": <CreateVoucherTab events={events} />,
     attendees: (
       <AttendeesTab
         events={events}
