@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart,
@@ -803,6 +804,582 @@ export function ChangePasswordTab() {
           >
             {mutation.isPending ? "Changing..." : "Change Password"}
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Create Event ─────────────────────────────────────────────────────────────
+export function CreateEventTab() {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    category: "MUSIC",
+    location: "",
+    startDate: "",
+    endDate: "",
+    isFree: "false",
+    price: "",
+    totalSeats: "",
+    availableSeats: "",
+  });
+
+  const [ticketTypes, setTicketTypes] = useState([
+    {
+      name: "Regular",
+      price: "",
+      quota: "",
+    },
+  ]);
+
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
+
+  const createEventMutation = useMutation({
+    mutationFn: async () => {
+      const fd = new FormData();
+
+      fd.append("name", form.name);
+      fd.append("description", form.description);
+      fd.append("category", form.category);
+      fd.append("location", form.location);
+
+      // input datetime-local menghasilkan format seperti: 2026-06-01T19:00
+      // new Date(...).toISOString() mengubahnya menjadi ISO format untuk backend
+      fd.append("startDate", new Date(form.startDate).toISOString());
+      fd.append("endDate", new Date(form.endDate).toISOString());
+
+      fd.append("isFree", form.isFree);
+      fd.append("price", form.isFree === "true" ? "0" : form.price);
+      fd.append("totalSeats", form.totalSeats);
+      fd.append("availableSeats", form.availableSeats);
+
+      const cleanedTicketTypes = ticketTypes.map((ticket) => ({
+        name: ticket.name,
+        price: Number(ticket.price),
+        quota: Number(ticket.quota),
+      }));
+
+      fd.append("ticketTypes", JSON.stringify(cleanedTicketTypes));
+
+      if (thumbnail) {
+        fd.append("thumbnail", thumbnail);
+      }
+
+      return axiosInstance.post("/events", fd, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    },
+    onSuccess: () => {
+      toast.success("Event created successfully");
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "events"] });
+      navigate("/dashboard/events");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to create event");
+    },
+  });
+
+  const updateForm = (key: keyof typeof form, value: string) => {
+    setForm((prev) => {
+      const next = { ...prev, [key]: value };
+
+      if (key === "isFree" && value === "true") {
+        next.price = "0";
+        setTicketTypes([
+          {
+            name: "General Admission",
+            price: "0",
+            quota: prev.totalSeats || "",
+          },
+        ]);
+      }
+
+      if (key === "totalSeats") {
+        next.availableSeats = value;
+
+        if (prev.isFree === "true") {
+          setTicketTypes([
+            {
+              name: "General Admission",
+              price: "0",
+              quota: value,
+            },
+          ]);
+        }
+      }
+
+      return next;
+    });
+  };
+
+  const updateTicketType = (
+    index: number,
+    key: "name" | "price" | "quota",
+    value: string,
+  ) => {
+    setTicketTypes((prev) =>
+      prev.map((ticket, i) =>
+        i === index ? { ...ticket, [key]: value } : ticket,
+      ),
+    );
+  };
+
+  const addTicketType = () => {
+    setTicketTypes((prev) => [
+      ...prev,
+      {
+        name: "",
+        price: form.isFree === "true" ? "0" : "",
+        quota: "",
+      },
+    ]);
+  };
+
+  const removeTicketType = (index: number) => {
+    setTicketTypes((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const totalTicketQuota = ticketTypes.reduce((sum, ticket) => {
+    return sum + Number(ticket.quota || 0);
+  }, 0);
+
+  const handleSubmit = () => {
+    if (!form.name.trim()) return toast.error("Event name is required");
+    if (form.name.trim().length < 3) {
+      return toast.error("Event name must be at least 3 characters");
+    }
+
+    if (!form.description.trim()) return toast.error("Description is required");
+    if (form.description.trim().length < 10) {
+      return toast.error("Description must be at least 10 characters");
+    }
+
+    if (!form.location.trim()) return toast.error("Location is required");
+    if (!form.startDate) return toast.error("Start date is required");
+    if (!form.endDate) return toast.error("End date is required");
+    if (!form.totalSeats) return toast.error("Total seats is required");
+    if (!form.availableSeats) return toast.error("Available seats is required");
+    if (!thumbnail) return toast.error("Thumbnail is required");
+
+    if (new Date(form.endDate) <= new Date(form.startDate)) {
+      return toast.error("End date must be after start date");
+    }
+
+    if (form.isFree === "false" && !form.price) {
+      return toast.error("Price is required for paid event");
+    }
+
+    if (Number(form.totalSeats) < 1) {
+      return toast.error("Total seats must be at least 1");
+    }
+
+    if (Number(form.availableSeats) < 1) {
+      return toast.error("Available seats must be at least 1");
+    }
+
+    if (Number(form.availableSeats) > Number(form.totalSeats)) {
+      return toast.error("Available seats cannot be bigger than total seats");
+    }
+
+    if (ticketTypes.length < 1) {
+      return toast.error("At least one ticket type is required");
+    }
+
+    for (const ticket of ticketTypes) {
+      if (!ticket.name.trim()) {
+        return toast.error("Every ticket type must have a name");
+      }
+
+      if (form.isFree === "false" && !ticket.price) {
+        return toast.error("Every paid ticket type must have a price");
+      }
+
+      if (!ticket.quota) {
+        return toast.error("Every ticket type must have a quota");
+      }
+
+      if (Number(ticket.quota) < 1) {
+        return toast.error("Ticket quota must be at least 1");
+      }
+
+      if (form.isFree === "false" && Number(ticket.price) < 1) {
+        return toast.error("Paid ticket price must be at least 1");
+      }
+    }
+
+    if (totalTicketQuota !== Number(form.totalSeats)) {
+      return toast.error(
+        "Total ticket type quota must be equal to total seats",
+      );
+    }
+
+    createEventMutation.mutate();
+  };
+
+  return (
+    <div style={{ maxWidth: 980 }}>
+      <div style={cardStyle}>
+        <div style={{ marginBottom: 22 }}>
+          <p
+            style={{
+              color: "#F9F3E8",
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: 26,
+              marginBottom: 6,
+            }}
+          >
+            Create New Event
+          </p>
+          <p style={{ color: "#6F6F7D", fontSize: 13 }}>
+            Fill in the event information, ticket types, and thumbnail before
+            publishing the event.
+          </p>
+        </div>
+
+        <div style={{ display: "grid", gap: 18 }}>
+          <div>
+            <label style={labelStyle}>Event Name</label>
+            <input
+              value={form.name}
+              onChange={(e) => updateForm("name", e.target.value)}
+              placeholder="Example: Konser Musik Jakarta"
+              style={inputStyle}
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Description</label>
+            <textarea
+              value={form.description}
+              onChange={(e) => updateForm("description", e.target.value)}
+              placeholder="Example: Konser spektakuler di Jakarta"
+              rows={5}
+              style={{
+                ...inputStyle,
+                resize: "vertical",
+                fontFamily: "inherit",
+              }}
+            />
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 14,
+            }}
+          >
+            <div>
+              <label style={labelStyle}>Category</label>
+              <select
+                value={form.category}
+                onChange={(e) => updateForm("category", e.target.value)}
+                style={inputStyle}
+              >
+                <option value="MUSIC">Music</option>
+                <option value="SPORTS">Sports</option>
+                <option value="FOOD">Food</option>
+                <option value="ART">Art</option>
+                <option value="EDUCATION">Education</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={labelStyle}>Location</label>
+              <input
+                value={form.location}
+                onChange={(e) => updateForm("location", e.target.value)}
+                placeholder="Example: Jakarta"
+                style={inputStyle}
+              />
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 14,
+            }}
+          >
+            <div>
+              <label style={labelStyle}>Start Date</label>
+              <input
+                type="datetime-local"
+                value={form.startDate}
+                onChange={(e) => updateForm("startDate", e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+
+            <div>
+              <label style={labelStyle}>End Date</label>
+              <input
+                type="datetime-local"
+                value={form.endDate}
+                onChange={(e) => updateForm("endDate", e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 14,
+            }}
+          >
+            <div>
+              <label style={labelStyle}>Event Type</label>
+              <select
+                value={form.isFree}
+                onChange={(e) => updateForm("isFree", e.target.value)}
+                style={inputStyle}
+              >
+                <option value="false">Paid Event</option>
+                <option value="true">Free Event</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={labelStyle}>Base Price</label>
+              <input
+                type="number"
+                min="0"
+                value={form.price}
+                onChange={(e) => updateForm("price", e.target.value)}
+                disabled={form.isFree === "true"}
+                placeholder="Example: 150000"
+                style={{
+                  ...inputStyle,
+                  opacity: form.isFree === "true" ? 0.55 : 1,
+                }}
+              />
+              <p style={{ color: "#5A5A6A", fontSize: 11, marginTop: 6 }}>
+                For paid events, this can follow the regular ticket price.
+              </p>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 14,
+            }}
+          >
+            <div>
+              <label style={labelStyle}>Total Seats</label>
+              <input
+                type="number"
+                min="1"
+                value={form.totalSeats}
+                onChange={(e) => updateForm("totalSeats", e.target.value)}
+                placeholder="Example: 200"
+                style={inputStyle}
+              />
+            </div>
+
+            <div>
+              <label style={labelStyle}>Available Seats</label>
+              <input
+                type="number"
+                min="1"
+                value={form.availableSeats}
+                onChange={(e) => updateForm("availableSeats", e.target.value)}
+                placeholder="Example: 200"
+                style={inputStyle}
+              />
+            </div>
+          </div>
+
+          <div style={cardStyle}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 12,
+                alignItems: "center",
+                marginBottom: 14,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <p
+                  style={{
+                    color: "#F9F3E8",
+                    fontSize: 14,
+                    marginBottom: 4,
+                  }}
+                >
+                  Ticket Types
+                </p>
+                <p style={{ color: "#6F6F7D", fontSize: 11 }}>
+                  Example: VIP, Regular, Early Bird. Total quota must equal
+                  total seats.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={addTicketType}
+                style={{
+                  ...ghostBtn,
+                  color: "#D4A94A",
+                  borderColor: "rgba(212,169,74,0.3)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <Plus size={12} /> Add Ticket
+              </button>
+            </div>
+
+            <div style={{ display: "grid", gap: 12 }}>
+              {ticketTypes.map((ticket, index) => (
+                <div
+                  key={index}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "minmax(180px, 1.4fr) minmax(120px, 1fr) minmax(120px, 1fr) auto",
+                    gap: 10,
+                    alignItems: "end",
+                  }}
+                >
+                  <div>
+                    <label style={labelStyle}>Ticket Name</label>
+                    <input
+                      value={ticket.name}
+                      onChange={(e) =>
+                        updateTicketType(index, "name", e.target.value)
+                      }
+                      placeholder="Example: VIP"
+                      style={inputStyle}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={labelStyle}>Ticket Price</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={ticket.price}
+                      onChange={(e) =>
+                        updateTicketType(index, "price", e.target.value)
+                      }
+                      disabled={form.isFree === "true"}
+                      placeholder="Example: 300000"
+                      style={{
+                        ...inputStyle,
+                        opacity: form.isFree === "true" ? 0.55 : 1,
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={labelStyle}>Quota</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={ticket.quota}
+                      onChange={(e) =>
+                        updateTicketType(index, "quota", e.target.value)
+                      }
+                      placeholder="Example: 50"
+                      style={inputStyle}
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => removeTicketType(index)}
+                    disabled={ticketTypes.length === 1}
+                    style={{
+                      ...ghostBtn,
+                      height: 39,
+                      opacity: ticketTypes.length === 1 ? 0.45 : 1,
+                    }}
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div
+              style={{
+                marginTop: 12,
+                padding: "10px 12px",
+                borderRadius: 4,
+                border: "1px solid rgba(212,169,74,0.12)",
+                background: "rgba(212,169,74,0.04)",
+                color:
+                  totalTicketQuota === Number(form.totalSeats)
+                    ? "#D4A94A"
+                    : "#EF4444",
+                fontSize: 11,
+              }}
+            >
+              Ticket quota total: {totalTicketQuota || 0} /{" "}
+              {form.totalSeats || 0}
+            </div>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Thumbnail</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setThumbnail(e.target.files?.[0] || null)}
+              style={inputStyle}
+            />
+           
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 10,
+              marginTop: 10,
+              flexWrap: "wrap",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard/events")}
+              style={{
+                ...ghostBtn,
+                padding: "11px 18px",
+              }}
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={createEventMutation.isPending}
+              style={{
+                ...goldBtn,
+                width: "auto",
+                padding: "11px 22px",
+                opacity: createEventMutation.isPending ? 0.7 : 1,
+              }}
+            >
+              {createEventMutation.isPending ? "Creating..." : "Create Event"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
