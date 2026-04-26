@@ -50,6 +50,14 @@ function Payment() {
     },
     enabled: Boolean(transactionId),
     retry: false,
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      if (data?.status === "DONE" && data?.event?.endDate) {
+        const hasEnded = new Date(data.event.endDate) < new Date();
+        return hasEnded ? false : 30_000;
+      }
+      return false;
+    },
   });
 
   useEffect(() => {
@@ -183,6 +191,12 @@ function Payment() {
 
   const canWriteReview =
     transaction.status === "DONE" && eventHasEnded && !reviewSubmitted;
+  console.log({
+    status: transaction.status,
+    endDate: transaction.event?.endDate,
+    eventHasEnded,
+    canWriteReview,
+  });
 
   const pageHeader = (() => {
     if (transaction.status === "WAITING_FOR_PAYMENT") {
