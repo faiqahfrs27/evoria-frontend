@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation,  useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart,
   Bar,
@@ -1343,7 +1343,6 @@ export function CreateEventTab() {
               onChange={(e) => setThumbnail(e.target.files?.[0] || null)}
               style={inputStyle}
             />
-           
           </div>
 
           <div
@@ -1382,6 +1381,471 @@ export function CreateEventTab() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Create Voucher ───────────────────────────────────────────────────────────
+export function CreateVoucherTab({ events }: { events: any[] }) {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    eventId: "",
+    code: "",
+    discountAmount: "",
+    startDate: "",
+    endDate: "",
+    quota: "",
+  });
+
+  const createVoucherMutation = useMutation({
+    mutationFn: async () => {
+      const body = {
+        code: form.code,
+        discountAmount: form.discountAmount,
+        startDate: new Date(form.startDate).toISOString(),
+        endDate: new Date(form.endDate).toISOString(),
+        quota: form.quota,
+      };
+
+      return axiosInstance.post(`/events/${form.eventId}/vouchers`, body);
+    },
+    onSuccess: () => {
+      toast.success("Voucher created successfully");
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "events"] });
+      navigate("/dashboard/vouchers");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to create voucher");
+    },
+  });
+
+  const updateForm = (key: keyof typeof form, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const selectedEvent = events.find((event) => event.id === form.eventId);
+
+  const handleSubmit = () => {
+    if (!form.eventId) return toast.error("Please select an event");
+
+    if (!form.code.trim()) return toast.error("Voucher code is required");
+
+    if (form.code.trim().length < 3) {
+      return toast.error("Voucher code must be at least 3 characters");
+    }
+
+    if (!form.discountAmount) {
+      return toast.error("Discount amount is required");
+    }
+
+    if (Number(form.discountAmount) < 1) {
+      return toast.error("Discount amount must be at least 1");
+    }
+
+    if (!form.startDate) return toast.error("Start date is required");
+    if (!form.endDate) return toast.error("End date is required");
+
+    if (new Date(form.endDate) <= new Date(form.startDate)) {
+      return toast.error("End date must be after start date");
+    }
+
+    if (!form.quota) return toast.error("Quota is required");
+
+    if (Number(form.quota) < 1) {
+      return toast.error("Quota must be at least 1");
+    }
+
+    createVoucherMutation.mutate();
+  };
+
+  return (
+    <div style={{ maxWidth: 860 }}>
+      <div style={cardStyle}>
+        <div style={{ marginBottom: 22 }}>
+          <p
+            style={{
+              color: "#F9F3E8",
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: 26,
+              marginBottom: 6,
+            }}
+          >
+            Create New Voucher
+          </p>
+          <p style={{ color: "#6F6F7D", fontSize: 13 }}>
+            Create a discount voucher for one of your events. The voucher can
+            only be used for the selected event.
+          </p>
+        </div>
+
+        {events.length === 0 ? (
+          <div
+            style={{
+              border: "1px solid rgba(212,169,74,0.12)",
+              background: "rgba(212,169,74,0.04)",
+              padding: 18,
+              borderRadius: 4,
+            }}
+          >
+            <p style={{ color: "#F9F3E8", fontSize: 13, marginBottom: 6 }}>
+              You do not have any events yet.
+            </p>
+            <p style={{ color: "#6F6F7D", fontSize: 12, marginBottom: 14 }}>
+              Create an event first before creating a voucher.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard/create-event")}
+              style={{
+                ...goldBtn,
+                width: "auto",
+                padding: "10px 16px",
+              }}
+            >
+              Create Event
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gap: 18 }}>
+            <div>
+              <label style={labelStyle}>Select Event</label>
+              <select
+                value={form.eventId}
+                onChange={(e) => updateForm("eventId", e.target.value)}
+                style={inputStyle}
+              >
+                <option value="">Choose event</option>
+                {events.map((event) => (
+                  <option key={event.id} value={event.id}>
+                    {event.name}
+                  </option>
+                ))}
+              </select>
+
+              {selectedEvent && (
+                <p style={{ color: "#5A5A6A", fontSize: 11, marginTop: 6 }}>
+                  Selected event: {selectedEvent.name}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label style={labelStyle}>Voucher Code</label>
+              <input
+                value={form.code}
+                onChange={(e) =>
+                  updateForm("code", e.target.value.toUpperCase())
+                }
+                placeholder="Example: EVORIA50"
+                style={inputStyle}
+              />
+              <p style={{ color: "#5A5A6A", fontSize: 11, marginTop: 6 }}>
+                Minimum 3 characters. Example: MUSIC50, VIPDISC, EARLYBIRD.
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                gap: 14,
+              }}
+            >
+              <div>
+                <label style={labelStyle}>Discount Amount</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={form.discountAmount}
+                  onChange={(e) =>
+                    updateForm(
+                      "discountAmount",
+                      e.target.value.replace(/\D/g, ""),
+                    )
+                  }
+                  placeholder="Example: 50000"
+                  style={inputStyle}
+                />
+                <p style={{ color: "#5A5A6A", fontSize: 11, marginTop: 6 }}>
+                  Fixed discount in IDR, not percentage.
+                </p>
+              </div>
+
+              <div>
+                <label style={labelStyle}>Quota</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={form.quota}
+                  onChange={(e) =>
+                    updateForm("quota", e.target.value.replace(/\D/g, ""))
+                  }
+                  placeholder="Example: 20"
+                  style={inputStyle}
+                />
+                <p style={{ color: "#5A5A6A", fontSize: 11, marginTop: 6 }}>
+                  How many times this voucher can be used.
+                </p>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                gap: 14,
+              }}
+            >
+              <div>
+                <label style={labelStyle}>Start Date</label>
+                <input
+                  type="datetime-local"
+                  value={form.startDate}
+                  onChange={(e) => updateForm("startDate", e.target.value)}
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={labelStyle}>End Date</label>
+                <input
+                  type="datetime-local"
+                  value={form.endDate}
+                  onChange={(e) => updateForm("endDate", e.target.value)}
+                  style={inputStyle}
+                />
+              </div>
+            </div>
+
+            <div
+              style={{
+                border: "1px solid rgba(212,169,74,0.12)",
+                background: "rgba(212,169,74,0.04)",
+                padding: "12px 14px",
+                borderRadius: 4,
+              }}
+            >
+              <p style={{ color: "#D4A94A", fontSize: 12, marginBottom: 4 }}>
+                Preview
+              </p>
+              <p style={{ color: "#8A8A9A", fontSize: 12 }}>
+                Voucher{" "}
+                <span style={{ color: "#F9F3E8" }}>{form.code || "CODE"}</span>{" "}
+                gives IDR{" "}
+                <span style={{ color: "#F9F3E8" }}>
+                  {form.discountAmount || "0"}
+                </span>{" "}
+                discount for{" "}
+                <span style={{ color: "#F9F3E8" }}>
+                  {selectedEvent?.name || "selected event"}
+                </span>
+                .
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 10,
+                marginTop: 10,
+                flexWrap: "wrap",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => navigate("/dashboard/vouchers")}
+                style={{
+                  ...ghostBtn,
+                  padding: "11px 18px",
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={createVoucherMutation.isPending}
+                style={{
+                  ...goldBtn,
+                  width: "auto",
+                  padding: "11px 22px",
+                  opacity: createVoucherMutation.isPending ? 0.7 : 1,
+                }}
+              >
+                {createVoucherMutation.isPending
+                  ? "Creating..."
+                  : "Create Voucher"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Vouchers ─────────────────────────────────────────────────────────────────
+export function VouchersTab({ events }: { events: any[] }) {
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!selectedEventId && events.length > 0) {
+      setSelectedEventId(events[0].id);
+    }
+  }, [events, selectedEventId]);
+
+  const selectedEvent = events.find((event) => event.id === selectedEventId);
+
+  const { data: vouchers = [], isLoading } = useQuery({
+    queryKey: ["dashboard", "vouchers", selectedEventId],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/events/${selectedEventId}/vouchers`);
+      return res.data.data ?? [];
+    },
+    enabled: !!selectedEventId,
+  });
+
+  return (
+    <div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 12,
+          alignItems: "center",
+          marginBottom: 14,
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ minWidth: 260 }}>
+          <label style={labelStyle}>Select Event</label>
+          <select
+            value={selectedEventId ?? ""}
+            onChange={(e) => setSelectedEventId(e.target.value)}
+            style={inputStyle}
+          >
+            <option value="">Choose event</option>
+            {events.map((event) => (
+              <option key={event.id} value={event.id}>
+                {event.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            window.location.href = "/dashboard/create-voucher";
+          }}
+          style={{
+            ...ghostBtn,
+            color: "#D4A94A",
+            borderColor: "rgba(212,169,74,0.3)",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <Plus size={12} /> Create Voucher
+        </button>
+      </div>
+
+      {!selectedEventId ? (
+        <div style={{ ...cardStyle, textAlign: "center", padding: "48px" }}>
+          <p style={{ color: "#5A5A6A", fontSize: 13 }}>
+            Select an event to view vouchers.
+          </p>
+        </div>
+      ) : isLoading ? (
+        <div style={{ ...cardStyle, textAlign: "center", padding: "48px" }}>
+          <p style={{ color: "#5A5A6A", fontSize: 13 }}>Loading vouchers...</p>
+        </div>
+      ) : (
+        <>
+          {selectedEvent && (
+            <p style={{ color: "#6F6F7D", fontSize: 12, marginBottom: 10 }}>
+              Showing vouchers for{" "}
+              <span style={{ color: "#F9F3E8" }}>{selectedEvent.name}</span>
+            </p>
+          )}
+
+          <DashTable
+            headers={[
+              "Code",
+              "Discount",
+              "Quota",
+              "Start Date",
+              "End Date",
+              "Status",
+            ]}
+            minWidth={760}
+            emptyMessage="No vouchers found for this event."
+            rows={vouchers.map((voucher: any) => [
+              <span style={{ color: "#F9F3E8", fontWeight: 600 }}>
+                {voucher.code}
+              </span>,
+              <span style={{ color: "#D4A94A", fontSize: 11 }}>
+                {fmt(
+                  voucher.discountAmount ??
+                    voucher.discount ??
+                    voucher.discountValue ??
+                    voucher.value ??
+                    0,
+                )}
+              </span>,
+              <span style={{ color: "#8A8A9A", fontSize: 11 }}>
+                {voucher.quota ?? "—"}
+              </span>,
+              <span style={{ color: "#8A8A9A", fontSize: 11 }}>
+                {voucher.startDate
+                  ? new Date(voucher.startDate).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "—"}
+              </span>,
+              <span style={{ color: "#8A8A9A", fontSize: 11 }}>
+                {voucher.endDate
+                  ? new Date(voucher.endDate).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "—"}
+              </span>,
+              <span
+                style={{
+                  padding: "3px 9px",
+                  borderRadius: 3,
+                  background:
+                    new Date(voucher.endDate) >= new Date()
+                      ? "rgba(34,197,94,0.08)"
+                      : "rgba(239,68,68,0.08)",
+                  border:
+                    new Date(voucher.endDate) >= new Date()
+                      ? "1px solid rgba(34,197,94,0.25)"
+                      : "1px solid rgba(239,68,68,0.25)",
+                  color:
+                    new Date(voucher.endDate) >= new Date()
+                      ? "#22C55E"
+                      : "#EF4444",
+                  fontSize: 10,
+                }}
+              >
+                {new Date(voucher.endDate) >= new Date()
+                  ? "Active"
+                  : "Expired"}
+              </span>,
+            ])}
+          />
+        </>
+      )}
     </div>
   );
 }
