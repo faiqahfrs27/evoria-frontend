@@ -72,7 +72,7 @@ function HeroCarousel() {
                 key={event.id}
                 to={`/events/${event.slug || event.id}`}
                 className={`absolute inset-0 transition-opacity duration-1000 ${
-                  isActive ? "opacity-100" : "opacity-0"
+                  isActive ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
                 }`}
               >
                 {event.imageUrl ? (
