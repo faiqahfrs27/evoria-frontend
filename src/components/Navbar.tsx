@@ -44,19 +44,40 @@ function Navbar() {
     setSearch(searchParams.get("search") || "");
   }, [searchParams]);
 
+  // Handle location search
+  const goToLocationPage = (loc: string) => {
+    const trimmed = loc.trim();
+    if (trimmed) {
+      navigate(`/events?location=${encodeURIComponent(trimmed)}&page=1`);
+    } else if (locationRouter.pathname === "/events") {
+      navigate("/events");
+    }
+  };
+
   useEffect(() => {
     const timer = setTimeout(() => goToSearchPage(search), 500);
     return () => clearTimeout(timer);
   }, [search]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    const timer = setTimeout(() => goToLocationPage(location), 500);
+    return () => clearTimeout(timer);
+  }, [location]);
+
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    type: "search" | "location",
+  ) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      goToSearchPage(search);
+      if (type === "search") {
+        goToSearchPage(search);
+      } else {
+        goToLocationPage(location);
+      }
       setMobileOpen(false);
     }
   };
-
   const logo = (
     <Link to="/" className="flex items-center gap-3">
       <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(212,169,74,0.75)]">
@@ -175,7 +196,7 @@ function Navbar() {
                   placeholder="Search..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  onKeyDown={handleKeyDown}
+                  onKeyDown={(e) => handleKeyDown(e, "search")}
                   className="h-10 w-40 rounded-sm border border-[rgba(212,169,74,0.32)] bg-[#14141A]/80 pl-9 pr-3 text-sm text-[#F9F3E8] outline-none transition placeholder:text-[#6F6F7D] focus:border-[#D4A94A]/70 lg:w-44"
                 />
               </div>
@@ -191,7 +212,7 @@ function Navbar() {
                   placeholder="Location..."
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  onKeyDown={handleKeyDown}
+                  onKeyDown={(e) => handleKeyDown(e, "location")}
                   className="h-10 w-36 rounded-sm border border-[rgba(212,169,74,0.32)] bg-[#14141A]/80 pl-9 pr-3 text-sm text-[#F9F3E8] outline-none transition placeholder:text-[#6F6F7D] focus:border-[#D4A94A]/70"
                 />
               </div>
@@ -265,7 +286,7 @@ function Navbar() {
                   placeholder="Search..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  onKeyDown={handleKeyDown}
+                  onKeyDown={(e) => handleKeyDown(e, "search")}
                   className="w-full rounded-sm border border-[rgba(212,169,74,0.32)] bg-[#14141A] py-3 pl-9 pr-3 text-sm text-[#F9F3E8] outline-none placeholder:text-[#6F6F7D]"
                 />
               </div>
@@ -281,7 +302,7 @@ function Navbar() {
                   placeholder="Location..."
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  onKeyDown={handleKeyDown}
+                  onKeyDown={(e) => handleKeyDown(e, "location")}
                   className="w-full rounded-sm border border-[rgba(212,169,74,0.32)] bg-[#14141A] py-3 pl-9 pr-3 text-sm text-[#F9F3E8] outline-none placeholder:text-[#6F6F7D]"
                 />
               </div>
