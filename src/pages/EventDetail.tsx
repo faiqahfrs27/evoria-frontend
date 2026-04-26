@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import {
   CalendarDays,
   Clock,
@@ -12,6 +12,7 @@ import {
   Plus,
   ArrowLeft,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import Navbar from "../components/Navbar";
 import { axiosInstance } from "../lib/axios";
 import type { Event } from "../types/event";
@@ -21,7 +22,7 @@ const formatPrice = (price: number) => {
     style: "currency",
     currency: "IDR",
     minimumFractionDigits: 0,
-  }).format(price);
+  }).format(price || 0);
 };
 
 const formatDate = (date: string) => {
@@ -51,16 +52,23 @@ const getVoucherDiscount = (voucher: any) => {
 
 function EventDetail() {
   const { slug } = useParams();
+  const navigate = useNavigate();
+
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [usePoints, setUsePoints] = useState(false);
 
   const [activeTab, setActiveTab] = useState<"description" | "tickets">(
     "description",
   );
 
-  const [selectedTickets, setSelectedTickets] = useState<Record<string, number>>(
-    {},
-  );
+  const [selectedTickets, setSelectedTickets] = useState<
+    Record<string, number>
+  >({});
 
   const [copiedVoucherId, setCopiedVoucherId] = useState<string | null>(null);
+  const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(
+    null,
+  );
 
   const {
     data: event,
@@ -77,6 +85,15 @@ function EventDetail() {
     retry: false,
   });
 
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get("/profile");
+      return data.data;
+    },
+    retry: false,
+  });
+
   const isFreeEvent = Boolean(event?.isFree || event?.price === 0);
 
   const totalPrice = useMemo(() => {
@@ -87,6 +104,25 @@ function EventDetail() {
       return total + qty * ticket.price;
     }, 0);
   }, [event, selectedTickets]);
+
+  const selectedVoucher = useMemo(() => {
+    return (event?.vouchers ?? []).find(
+      (voucher) => voucher.id === selectedVoucherId,
+    );
+  }, [event?.vouchers, selectedVoucherId]);
+
+  const voucherDiscount = useMemo(() => {
+    if (!selectedVoucher) return 0;
+    return getVoucherDiscount(selectedVoucher);
+  }, [selectedVoucher]);
+
+  const priceAfterVoucher = Math.max(0, totalPrice - voucherDiscount);
+
+  const pointBalance = profile?.pointBalance ?? 0;
+
+  const pointUsed = usePoints ? Math.min(pointBalance, priceAfterVoucher) : 0;
+
+  const finalPrice = Math.max(0, priceAfterVoucher - pointUsed);
 
   const totalQty = Object.values(selectedTickets).reduce(
     (total, qty) => total + qty,
@@ -119,6 +155,48 @@ function EventDetail() {
     }
   };
 
+  const handleCheckout = async () => {
+    if (!event) return;
+
+    const selectedEntries = Object.entries(selectedTickets).filter(
+      ([, quantity]) => quantity > 0,
+    );
+
+    if (!isFreeEvent && selectedEntries.length === 0) {
+      toast.error("Please select at least one ticket.");
+      return;
+    }
+
+    if (selectedEntries.length > 1) {
+      toast.error("For now, please select only one ticket type.");
+      return;
+    }
+
+    const [ticketTypeId, quantity] = selectedEntries[0] ?? [];
+
+    try {
+      setIsCheckingOut(true);
+
+      const { data } = await axiosInstance.post("/transactions", {
+        eventId: event.id,
+        ticketTypeId: isFreeEvent ? undefined : ticketTypeId,
+        quantity: String(isFreeEvent ? 1 : quantity),
+        voucherId: selectedVoucherId || undefined,
+        pointUsed: String(pointUsed),
+      });
+
+      toast.success("Transaction created successfully.");
+
+      navigate(`/transactions/${data.data.id}/payment`);
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message || "Failed to create transaction.",
+      );
+    } finally {
+      setIsCheckingOut(false);
+    }
+  };
+
   if (isPending) {
     return (
       <div className="min-h-screen bg-[#0D0D0F] text-[#F9F3E8]">
@@ -145,6 +223,7 @@ function EventDetail() {
             </p>
 
             <button
+              type="button"
               onClick={() => refetch()}
               className="mt-5 rounded-sm border border-red-300/40 px-4 py-2 text-sm font-semibold text-red-100 transition hover:bg-red-500/10"
             >
@@ -188,6 +267,7 @@ function EventDetail() {
                 {(event.vouchers ?? []).map((voucher) => {
                   const discount = getVoucherDiscount(voucher);
                   const isCopied = copiedVoucherId === voucher.id;
+                  const isSelected = selectedVoucherId === voucher.id;
 
                   return (
                     <motion.div
@@ -195,7 +275,11 @@ function EventDetail() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25 }}
-                      className="min-w-[155px] rounded-[0.75rem] border border-[rgba(212,169,74,0.18)] bg-[#0D0D0F]/80 p-3"
+                      className={`min-w-[155px] rounded-[0.75rem] border p-3 transition ${
+                        isSelected
+                          ? "border-[#D4A94A] bg-[rgba(212,169,74,0.12)]"
+                          : "border-[rgba(212,169,74,0.18)] bg-[#0D0D0F]/80"
+                      }`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
@@ -272,6 +356,18 @@ function EventDetail() {
                           {formatDate(voucher.endDate)}
                         </p>
                       )}
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedVoucherId((current) =>
+                            current === voucher.id ? null : voucher.id,
+                          )
+                        }
+                        className="mt-3 w-full rounded-sm border border-[rgba(212,169,74,0.28)] px-3 py-1.5 text-xs font-semibold text-[#D4A94A] transition hover:bg-[rgba(212,169,74,0.08)]"
+                      >
+                        {isSelected ? "Selected" : "Use Voucher"}
+                      </button>
                     </motion.div>
                   );
                 })}
@@ -281,6 +377,7 @@ function EventDetail() {
             <div className="mt-4 rounded-[1rem] border border-[rgba(212,169,74,0.14)] bg-[#14141A]/55 p-4">
               <div className="mb-4 grid grid-cols-2 overflow-hidden rounded-sm border border-[rgba(212,169,74,0.14)] bg-[#2A2624] p-1">
                 <button
+                  type="button"
                   onClick={() => setActiveTab("description")}
                   className={`rounded-sm py-2 text-sm font-semibold transition ${
                     activeTab === "description"
@@ -292,6 +389,7 @@ function EventDetail() {
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => setActiveTab("tickets")}
                   className={`rounded-sm py-2 text-sm font-semibold transition ${
                     activeTab === "tickets"
@@ -315,7 +413,9 @@ function EventDetail() {
                     </p>
 
                     <ul className="list-inside list-disc space-y-1">
-                      <li>Official ticket purchase is available through Evoria.</li>
+                      <li>
+                        Official ticket purchase is available through Evoria.
+                      </li>
                       <li>One e-ticket is valid for one person.</li>
                       <li>Please keep your ticket until the event ends.</li>
                     </ul>
@@ -470,19 +570,79 @@ function EventDetail() {
               )}
 
               <div className="border-t border-[rgba(212,169,74,0.14)] pt-5">
-                <div className="mb-5 flex items-center justify-between text-sm">
+                <div className="mb-3 flex items-center justify-between text-sm">
                   <span className="text-[#B9B1A5]">Total price</span>
                   <span className="text-lg font-bold text-[#F9F3E8]">
                     {formatPrice(totalPrice)}
                   </span>
                 </div>
 
+                {selectedVoucher && (
+                  <div className="mb-3 flex items-center justify-between text-sm">
+                    <span className="text-[#B9B1A5]">
+                      Voucher ({selectedVoucher.code})
+                    </span>
+                    <span className="font-semibold text-[#D4A94A]">
+                      - {formatPrice(voucherDiscount)}
+                    </span>
+                  </div>
+                )}
+
+                <div className="mb-3 rounded-[0.75rem] border border-[rgba(212,169,74,0.14)] bg-[#14141A]/70 p-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-semibold text-[#F9F3E8]">
+                        Use points
+                      </p>
+                      <p className="mt-1 text-xs text-[#8A8A9A]">
+                        Balance: {formatPrice(pointBalance)}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setUsePoints((current) => !current)}
+                      disabled={pointBalance <= 0 || priceAfterVoucher <= 0}
+                      className={`relative h-6 w-11 rounded-full transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                        usePoints ? "bg-[#D4A94A]" : "bg-[#3A342E]"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-1 h-4 w-4 rounded-full bg-[#0D0D0F] transition ${
+                          usePoints ? "left-6" : "left-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {usePoints && (
+                    <div className="mt-3 flex items-center justify-between text-sm">
+                      <span className="text-[#B9B1A5]">Points used</span>
+                      <span className="font-semibold text-[#D4A94A]">
+                        - {formatPrice(pointUsed)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mb-5 flex items-center justify-between text-sm">
+                  <span className="text-[#B9B1A5]">Final price</span>
+                  <span className="text-lg font-bold text-[#F9F3E8]">
+                    {formatPrice(finalPrice)}
+                  </span>
+                </div>
+
                 <button
                   type="button"
-                  disabled={!isFreeEvent && totalQty === 0}
+                  onClick={handleCheckout}
+                  disabled={isCheckingOut || (!isFreeEvent && totalQty === 0)}
                   className="h-11 w-full rounded-sm bg-[#D4A94A] text-sm font-bold text-[#0D0D0F] transition hover:bg-[#E8C97A] disabled:cursor-not-allowed disabled:opacity-45"
                 >
-                  {isFreeEvent ? "Register Free" : "Checkout"}
+                  {isCheckingOut
+                    ? "Processing..."
+                    : isFreeEvent
+                      ? "Register Free"
+                      : "Checkout"}
                 </button>
               </div>
             </div>

@@ -12,6 +12,7 @@ import { useAuth } from "./stores/useAuth";
 import Dashboard from "./pages/Dashboard";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
+import Payment from "./pages/Payment";
 
 const queryClient = new QueryClient();
 
@@ -27,7 +28,7 @@ const router = createBrowserRouter([
     path: "/",
     element: <Home />,
   },
-    {
+  {
     path: "/events",
     element: <Events />,
   },
@@ -36,12 +37,16 @@ const router = createBrowserRouter([
     element: <EventDetail />,
   },
   {
+    path: "/transactions/:transactionId/payment",
+    element: <Payment />,
+  },
+  {
     path: "/register",
     element: <Register />,
   },
   {
     path: "/register/organizer",
-    element: <Register role="ORGANIZER" />,         
+    element: <Register role="ORGANIZER" />,
   },
   {
     path: "/login",
