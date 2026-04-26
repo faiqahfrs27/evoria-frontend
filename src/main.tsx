@@ -9,10 +9,10 @@ import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
 import { useAuth } from "./stores/useAuth";
-import Dashboard from "./pages/Dashboard";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
 import Payment from "./pages/Payment";
+import Dashboard from "./pages/dashboard/Dashboard";
 import OrganizerProfile from "./pages/OrganizerProfile";
 
 const queryClient = new QueryClient();
@@ -64,6 +64,19 @@ const router = createBrowserRouter([
         <Dashboard />
       </OrganizerRoute>
     ),
+    children: [
+      { index: true, element: <Navigate to="overview" replace /> },
+      { path: "overview" },
+      { path: "events" },
+      { path: "create-event" },
+      { path: "transactions" },
+      { path: "manual-payments" },
+      { path: "attendees" },
+      { path: "vouchers" },
+      { path: "create-voucher" },
+      { path: "profile" },
+      { path: "change-password" },
+    ],
   },
 ]);
 
