@@ -29,6 +29,10 @@ function Payment() {
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
   const {
     data: transaction,
@@ -38,7 +42,9 @@ function Payment() {
   } = useQuery({
     queryKey: ["transaction-detail", transactionId],
     queryFn: async () => {
-      const { data } = await axiosInstance.get(`/transactions/${transactionId}`);
+      const { data } = await axiosInstance.get(
+        `/transactions/${transactionId}`,
+      );
       return data.data;
     },
     enabled: Boolean(transactionId),
@@ -101,6 +107,37 @@ function Payment() {
     }
   };
 
+  const handleSubmitReview = async () => {
+    if (!transaction?.event?.id) {
+      toast.error("Event data is missing.");
+      return;
+    }
+
+    if (rating < 1 || rating > 5) {
+      toast.error("Rating must be between 1 and 5.");
+      return;
+    }
+
+    try {
+      setIsSubmittingReview(true);
+
+      await axiosInstance.post("/reviews", {
+        eventId: transaction.event.id,
+        rating,
+        comment: comment.trim() || undefined,
+      });
+
+      toast.success("Review submitted successfully.");
+      setReviewSubmitted(true);
+      setComment("");
+      setRating(5);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to submit review.");
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
   if (isPending) {
     return (
       <div className="min-h-screen bg-[#0D0D0F] text-[#F9F3E8]">
@@ -120,7 +157,8 @@ function Payment() {
           <div className="rounded-[1.1rem] border border-red-500/30 bg-red-950/20 p-8 text-red-200">
             <p className="font-semibold">Transaction failed to load.</p>
             <p className="mt-2 text-sm text-red-200/80">
-              Please make sure GET /transactions/:id already exists in your backend.
+              Please make sure GET /transactions/:id already exists in your
+              backend.
             </p>
 
             <button
@@ -138,6 +176,13 @@ function Payment() {
 
   const canUpload = transaction.status === "WAITING_FOR_PAYMENT";
 
+  const eventHasEnded = transaction.event?.endDate
+    ? new Date(transaction.event.endDate) < new Date()
+    : false;
+
+  const canWriteReview =
+    transaction.status === "DONE" && eventHasEnded && !reviewSubmitted;
+
   return (
     <div className="min-h-screen bg-[#0D0D0F] text-[#F9F3E8]">
       <Navbar />
@@ -149,8 +194,8 @@ function Payment() {
           </p>
           <h1 className="mt-2 text-2xl font-bold">Complete Your Payment</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#B9B1A5]">
-            Upload your payment proof before the deadline. After the proof is uploaded,
-            the transaction will wait for organizer confirmation.
+            Upload your payment proof before the deadline. After the proof is
+            uploaded, the transaction will wait for organizer confirmation.
           </p>
         </div>
 
@@ -195,6 +240,68 @@ function Payment() {
                 {transaction.status}
               </p>
             </div>
+
+            {canWriteReview && (
+              <div className="mt-5 rounded-[0.9rem] border border-[rgba(212,169,74,0.14)] bg-[#0D0D0F]/70 p-4">
+                <p className="text-sm font-semibold text-[#F9F3E8]">
+                  Write a Review
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-[#8A8A9A]">
+                  Share your experience after attending this event.
+                </p>
+
+                <div className="mt-4">
+                  <label className="text-sm font-semibold text-[#B9B1A5]">
+                    Rating
+                  </label>
+
+                  <div className="mt-2 flex gap-2">
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setRating(value)}
+                        className={`text-2xl transition ${
+                          value <= rating ? "text-[#D4A94A]" : "text-[#4A4038]"
+                        }`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label className="text-sm font-semibold text-[#B9B1A5]">
+                    Comment
+                  </label>
+
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    rows={4}
+                    placeholder="Tell us about your experience..."
+                    className="mt-2 w-full resize-none rounded-sm border border-[rgba(212,169,74,0.18)] bg-[#14141A] px-3 py-2 text-sm text-[#F9F3E8] outline-none transition placeholder:text-[#6F6A63] focus:border-[#D4A94A]"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleSubmitReview}
+                  disabled={isSubmittingReview}
+                  className="mt-4 h-11 w-full rounded-sm bg-[#D4A94A] text-sm font-bold text-[#0D0D0F] transition hover:bg-[#E8C97A] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isSubmittingReview ? "Submitting..." : "Submit Review"}
+                </button>
+              </div>
+            )}
+
+            {reviewSubmitted && (
+              <div className="mt-5 rounded-[0.9rem] border border-green-500/20 bg-green-950/20 p-4 text-sm text-green-200">
+                Thank you. Your review has been submitted.
+              </div>
+            )}
 
             {canUpload && (
               <div className="mt-5 rounded-[0.9rem] border border-[rgba(212,169,74,0.14)] bg-[#0D0D0F]/70 p-4">
