@@ -13,6 +13,7 @@ import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
 import Payment from "./pages/Payment";
 import Dashboard from "./pages/dashboard/Dashboard";
+import OrganizerProfile from "./pages/OrganizerProfile";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
   {
     path: "/events/:slug",
     element: <EventDetail />,
+  },
+  {
+    path: "/organizers/:organizerId",
+    element: <OrganizerProfile />,
   },
   {
     path: "/transactions/:transactionId/payment",

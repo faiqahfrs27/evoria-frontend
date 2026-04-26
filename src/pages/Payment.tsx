@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { useParams } from "react-router";
 import Navbar from "../components/Navbar";
 import { axiosInstance } from "../lib/axios";
+import Footer from "../components/Footer";
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("id-ID", {
@@ -373,6 +374,7 @@ function Payment() {
           </aside>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

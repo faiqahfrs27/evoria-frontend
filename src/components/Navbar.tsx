@@ -64,7 +64,12 @@ function Navbar() {
       </div>
       <span
         className="text-[13px] font-semibold tracking-[0.18em] text-[#F9F3E8] sm:text-sm"
-        style={{ fontFamily: "'Cormorant Garamond', serif" }}
+        style={{
+          fontFamily: "'Cormorant Garamond', serif",
+          fontSize: 18,
+          letterSpacing: "0.15em",
+          color: "#F9F3E8",
+        }}
       >
         EVORIA
       </span>
