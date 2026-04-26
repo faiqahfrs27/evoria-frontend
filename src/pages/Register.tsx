@@ -55,6 +55,7 @@ function Register({ role = "USER" }: { role?: "USER" | "ORGANIZER" }) {
         email: payload.email,
         password: payload.password,
         role: role,
+        referralCode: payload.referralCode || undefined,
       });
       return res.data;
     },
@@ -186,8 +187,7 @@ function Register({ role = "USER" }: { role?: "USER" | "ORGANIZER" }) {
               >
                 {role === "ORGANIZER" ? (
                   <>
-                    Join as{" "}
-                    <span className="text-shimmer">Organizer</span>
+                    Join as <span className="text-shimmer">Organizer</span>
                   </>
                 ) : (
                   <>
@@ -289,6 +289,16 @@ function Register({ role = "USER" }: { role?: "USER" | "ORGANIZER" }) {
                 autoComplete="new-password"
                 delay={400}
                 registration={register("confirmPassword")}
+              />
+
+              <FormField
+                id="referralCode"
+                label="Referral Code"
+                placeholder="Enter referral code (optional)"
+                error={errors.referralCode}
+                autoComplete="off"
+                delay={450}
+                registration={register("referralCode")}
               />
             </div>
 
