@@ -1,18 +1,18 @@
-import { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "react-router";
+import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowLeft,
   CalendarDays,
   Clock,
   MapPin,
-  User,
-  Ticket,
   Minus,
   Plus,
-  ArrowLeft,
+  Ticket,
 } from "lucide-react";
+import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import { Link, useNavigate, useParams } from "react-router";
+import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import { axiosInstance } from "../lib/axios";
 import type { Event } from "../types/event";
@@ -520,17 +520,49 @@ function EventDetail() {
               </div>
 
               <div className="mt-6 border-t border-[rgba(212,169,74,0.14)] pt-5">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(212,169,74,0.28)] bg-[rgba(212,169,74,0.08)]">
-                    <User size={17} className="text-[#D4A94A]" />
-                  </div>
+                <div>
+                  <p className="text-xs text-[#8A8A9A]">Organizer</p>
 
-                  <div>
-                    <p className="text-xs text-[#8A8A9A]">Organizer</p>
-                    <p className="text-sm font-semibold text-[#F9F3E8]">
-                      {event.organizer?.name || "Organizer"}
-                    </p>
-                  </div>
+                  {event.organizer?.id ? (
+                    <Link
+                      to={`/organizers/${event.organizer.id}`}
+                      className="mt-2 flex w-fit items-center gap-2 rounded-full border border-[rgba(212,169,74,0.14)] bg-[#14141A]/70 px-2.5 py-1.5 transition hover:border-[rgba(212,169,74,0.4)] hover:bg-[rgba(212,169,74,0.08)]"
+                    >
+                      <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-[rgba(212,169,74,0.28)] bg-[#0D0D0F]">
+                        {event.organizer.profilePic ? (
+                          <img
+                            src={event.organizer.profilePic}
+                            alt={event.organizer.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-xs font-bold text-[#D4A94A]">
+                            {(event.organizer.name || "O")
+                              .charAt(0)
+                              .toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+
+                      <span className="text-sm font-semibold text-[#F9F3E8]">
+                        {event.organizer.name || "Organizer"}
+                      </span>
+                    </Link>
+                  ) : (
+                    <div className="mt-2 flex w-fit items-center gap-2 rounded-full border border-[rgba(212,169,74,0.14)] bg-[#14141A]/70 px-2.5 py-1.5">
+                      <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-[rgba(212,169,74,0.28)] bg-[#0D0D0F]">
+                        <span className="text-xs font-bold text-[#D4A94A]">
+                          {(event.organizer?.name || "O")
+                            .charAt(0)
+                            .toUpperCase()}
+                        </span>
+                      </div>
+
+                      <span className="text-sm font-semibold text-[#F9F3E8]">
+                        {event.organizer?.name || "Organizer"}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -649,6 +681,7 @@ function EventDetail() {
           </aside>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
