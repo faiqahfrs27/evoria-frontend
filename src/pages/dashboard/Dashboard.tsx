@@ -13,6 +13,7 @@ import { useAttendees } from "../../hooks/dashboard-hooks/useAttendees";
 import {
   AttendeesTab,
   ChangePasswordTab,
+  CreateEventTab,
   EventsTab,
   OverviewTab,
   PlaceholderTab,
@@ -72,7 +73,7 @@ export default function Dashboard() {
         setSelectedEventId={setSelectedEventId}
       />
     ),
-    "create-event": <PlaceholderTab title="Create Event" />,
+    "create-event": <CreateEventTab />,
     transactions: (
       <TransactionsTab
         events={events}
