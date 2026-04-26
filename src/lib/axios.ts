@@ -7,7 +7,7 @@ export const axiosInstance = axios.create({
 });
 
 export const refreshInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL ,
   withCredentials: true,
 });
 
@@ -21,9 +21,9 @@ axiosInstance.interceptors.response.use(
       error.response?.data?.message === "Token Expired" &&
       !originalRequest._retry
     ) {
-      originalRequest._retry = true; // ← tambah ini biar tidak infinite loop
+      originalRequest._retry = true; 
       try {
-        await refreshInstance.post("/auth/refresh"); // ← fix typo
+        await refreshInstance.post("/refresh"); 
         return axiosInstance(originalRequest);
       } catch (err) {
         useAuth.getState().logout();
@@ -31,6 +31,6 @@ axiosInstance.interceptors.response.use(
       }
     }
 
-    return Promise.reject(error); // ← tambah ini biar error lain tetap ter-reject
+    return Promise.reject(error); 
   },
 );

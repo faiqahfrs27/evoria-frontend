@@ -15,11 +15,14 @@ import { fadeUp } from "../lib/animationStyle";
 import { useAuth } from "../stores/useAuth";
 import { useGoogleAuth } from "../hooks/useGoogleAuth";
 import type { LoginSchema } from "../schemas/loginSchema";
+import { useState } from "react";
+import { ForgotPasswordModal } from "./ForgotPasswordModal";
 
 function Login() {
   const login = useAuth((s) => s.login);
   const navigate = useNavigate();
   const { handleGoogleLogin, isPending: isGooglePending } = useGoogleAuth();
+  const [showForgot, setShowForgot] = useState(false);
 
   const {
     register,
@@ -45,7 +48,7 @@ function Login() {
     onSuccess: (data) => {
       login(data.user);
       toast.success(`Selamat datang, ${data.user.name.split(" ")[0]}!`);
-      
+
       if (data.user.role === "ORGANIZER") {
         navigate("/dashboard");
       } else {
@@ -253,21 +256,27 @@ function Login() {
                   )}
                 </div>
                 <span style={{ fontSize: 11, color: "#8A8A9A" }}>
-                   Remember me
+                  Remember me
                 </span>
               </label>
 
-              <Link
-                to="/forgot-password"
+              <button
+                type="button"
+                onClick={() => setShowForgot(true)}
                 style={{
                   fontSize: 11,
                   color: "#D4A94A",
-                  textDecoration: "none",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
                 }}
               >
                 Forgot password?
-              </Link>
+              </button>
             </div>
+            {showForgot && (
+              <ForgotPasswordModal onClose={() => setShowForgot(false)} />
+            )}
 
             {/* Submit */}
             <div style={fadeUp(400)}>
