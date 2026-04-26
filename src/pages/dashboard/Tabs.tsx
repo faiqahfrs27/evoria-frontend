@@ -648,12 +648,16 @@ export function AttendeesTab({
 
 // ─── Profile ──────────────────────────────────────────────────────────────────
 export function ProfileTab() {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const [name, setName] = useState(user?.name ?? "");
 
   const updateMutation = useMutation({
-    mutationFn: () => axiosInstance.patch("/profile", { name }),
-    onSuccess: () => toast.success("Profile updated"),
+    mutationFn: () =>
+      axiosInstance.put("/dashboard/organizer/profile", { name }),
+    onSuccess: (res) => {
+      toast.success("Profile updated");
+      if (user) login({ ...user, name: res.data.data.name });
+    },
     onError: () => toast.error("Failed"),
   });
 
@@ -661,11 +665,14 @@ export function ProfileTab() {
     mutationFn: (file: File) => {
       const fd = new FormData();
       fd.append("profilePic", file);
-      return axiosInstance.patch("/profile/picture", fd, {
+      return axiosInstance.patch("/dashboard/organizer/profile/picture", fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
     },
-    onSuccess: () => toast.success("Picture updated"),
+    onSuccess: (res) => {
+      toast.success("Picture updated");
+      if (user) login({ ...user, profilePic: res.data.data.profilePic });
+    },
     onError: () => toast.error("Failed to upload"),
   });
 
@@ -769,7 +776,8 @@ export function ChangePasswordTab() {
   });
 
   const mutation = useMutation({
-    mutationFn: () => axiosInstance.put("/profile/change-password", form),
+    mutationFn: () =>
+      axiosInstance.put("/dashboard/organizer/profile/change-password", form),
     onSuccess: () => {
       toast.success("Password changed");
       setForm({ currentPassword: "", newPassword: "", confirmNewPassword: "" });
@@ -780,7 +788,6 @@ export function ChangePasswordTab() {
   return (
     <div style={{ maxWidth: 460 }}>
       <div style={cardStyle}>
-        <p style={{ ...labelStyle, marginBottom: 16 }}>Change Password</p>
         <div style={{ display: "grid", gap: 12 }}>
           {[
             { key: "currentPassword", label: "Current Password" },
@@ -1845,6 +1852,67 @@ export function VouchersTab({ events }: { events: any[] }) {
             ])}
           />
         </>
+export function ManualPaymentsTab({ events, transactions, selectedEventId, setSelectedEventId }: {
+  events: any[]; transactions: any[]; selectedEventId: string | null; setSelectedEventId: (id: string | null) => void;
+}) {
+  const qc = useQueryClient();
+  const [proofModal, setProofModal] = useState<string | null>(null);
+
+  // ✅ filter hanya WAITING_FOR_ADMIN_CONFIRMATION
+  const pendingTransactions = transactions.filter(
+    (tx) => tx.status === "WAITING_FOR_ADMIN_CONFIRMATION"
+  );
+
+  const acceptMutation = useMutation({
+    mutationFn: (id: string) => axiosInstance.patch(`/dashboard/transactions/${id}/accept`),
+    onSuccess: () => { toast.success("Accepted"); qc.invalidateQueries({ queryKey: ["dashboard", "transactions"] }); },
+    onError: () => toast.error("Failed to accept"),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: (id: string) => axiosInstance.patch(`/dashboard/transactions/${id}/reject`),
+    onSuccess: () => { toast.success("Rejected"); qc.invalidateQueries({ queryKey: ["dashboard", "transactions"] }); },
+    onError: () => toast.error("Failed to reject"),
+  });
+
+  const rows = pendingTransactions.map((tx) => [
+    <span style={{ color: "#F9F3E8" }}>{tx.customer?.name}</span>,
+    <span style={{ color: "#8A8A9A", fontSize: 11 }}>{tx.customer?.email}</span>,
+    tx.paymentProof
+      ? <button onClick={() => setProofModal(tx.paymentProof)} style={{ ...ghostBtn, color: "#D4A94A", borderColor: "rgba(212,169,74,0.3)", display: "flex", alignItems: "center", gap: 4, padding: "4px 10px" }}>
+          <Eye size={11} /> View Proof
+        </button>
+      : <span style={{ color: "#5A5A6A" }}>No proof yet</span>,
+    <span style={{ color: "#F9F3E8", textAlign: "center" as const }}>{tx.quantity}</span>,
+    <span style={{ color: "#8A8A9A", fontSize: 11 }}>{fmt(tx.basePrice)}</span>,
+    <span style={{ color: "#D4A94A", fontSize: 11 }}>{fmt(tx.finalPrice)}</span>,
+    <span style={{ color: "#5A5A6A", fontSize: 11 }}>{new Date(tx.createdAt).toLocaleDateString("id-ID")}</span>,
+    <div style={{ display: "flex", gap: 6 }}>
+      <button onClick={() => acceptMutation.mutate(tx.id)} style={{ padding: "4px 10px", borderRadius: 3, border: "1px solid rgba(34,197,94,0.3)", background: "rgba(34,197,94,0.06)", color: "#22C55E", fontSize: 10, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+        <CheckCircle size={10} /> Accept
+      </button>
+      <button onClick={() => rejectMutation.mutate(tx.id)} style={{ padding: "4px 10px", borderRadius: 3, border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.06)", color: "#EF4444", fontSize: 10, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+        <XCircle size={10} /> Reject
+      </button>
+    </div>,
+  ]);
+
+  return (
+    <div>
+      <EventSelector events={events} value={selectedEventId} onChange={setSelectedEventId} />
+      <DashTable
+        headers={["Customer", "Email", "Payment Proof", "Qty", "Base Price", "Final Price", "Date", "Actions"]}
+        rows={rows}
+        emptyMessage={!selectedEventId ? "Select an event to view pending payments." : "No pending payments."}
+        minWidth={800}
+      />
+      {proofModal && (
+        <div onClick={() => setProofModal(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+            <img src={proofModal} alt="Payment proof" style={{ maxWidth: "88vw", maxHeight: "80vh", borderRadius: 6, border: "1px solid rgba(212,169,74,0.15)" }} />
+            <button onClick={() => setProofModal(null)} style={{ ...ghostBtn, display: "flex", alignItems: "center", gap: 6 }}><X size={11} /> Close</button>
+          </div>
+        </div>
       )}
     </div>
   );

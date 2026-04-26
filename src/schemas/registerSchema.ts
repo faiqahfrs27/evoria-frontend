@@ -9,8 +9,14 @@ export const registerSchema = z
       .min(6, { message: "Password must be at least 6 chars" })
       .regex(/[A-Z]/, "Must contain an uppercase letter")
       .regex(/[0-9]/, "Must contain a number"),
+    referralCode: z.string().optional(),
     confirmPassword: z.string().min(1, "Must confirm your password"),
-    agreeToTerms: z.boolean().refine((isChecked) => isChecked === true, "You must agree to the Terms & Conditions"),
+    agreeToTerms: z
+      .boolean()
+      .refine(
+        (isChecked) => isChecked === true,
+        "You must agree to the Terms & Conditions",
+      ),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",

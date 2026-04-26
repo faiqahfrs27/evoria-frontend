@@ -16,6 +16,7 @@ import {
   CreateEventTab,
   CreateVoucherTab,
   EventsTab,
+  ManualPaymentsTab,
   OverviewTab,
   PlaceholderTab,
   ProfileTab,
@@ -84,7 +85,14 @@ export default function Dashboard() {
         setSelectedEventId={setSelectedEventId}
       />
     ),
-    "manual-payments": <PlaceholderTab title="Manual Payments" />,
+    "manual-payments": (
+      <ManualPaymentsTab
+        events={events}
+        transactions={transactions}
+        selectedEventId={selectedEventId}
+        setSelectedEventId={setSelectedEventId}
+      />
+    ),
     tickets: <PlaceholderTab title="Tickets" />,
     "create-ticket": <PlaceholderTab title="Create Ticket" />,
     vouchers: <VouchersTab events={events} />,
