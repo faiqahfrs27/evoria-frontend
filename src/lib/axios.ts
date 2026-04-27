@@ -7,7 +7,7 @@ export const axiosInstance = axios.create({
 });
 
 export const refreshInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ,
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 });
 
@@ -16,14 +16,18 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    if (!originalRequest) return Promise.reject(error);
+
     if (
       error.response?.status === 401 &&
       error.response?.data?.message === "Token Expired" &&
-      !originalRequest._retry
+      !originalRequest._retry &&
+      originalRequest.url !== "/auth/refresh"
     ) {
-      originalRequest._retry = true; 
+      originalRequest._retry = true;
+
       try {
-        await refreshInstance.post("/refresh"); 
+        await refreshInstance.post("/auth/refresh");
         return axiosInstance(originalRequest);
       } catch (err) {
         useAuth.getState().logout();
@@ -31,6 +35,6 @@ axiosInstance.interceptors.response.use(
       }
     }
 
-    return Promise.reject(error); 
+    return Promise.reject(error);
   },
 );
