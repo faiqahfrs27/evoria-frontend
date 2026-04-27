@@ -13,14 +13,20 @@ export function useGoogleAuth() {
   const { mutateAsync, isPending } = useMutation({
     mutationFn: async (accessToken: string) => {
       const res = await axiosInstance.post("/auth/google", {
-        credential: accessToken,
+        accessToken, 
       });
       return res.data;
     },
     onSuccess: (data) => {
       setAuth(data.user);
-      toast.success(`Selamat datang, ${data.user.fullName.split(" ")[0]}!`);
-      navigate("/dashboard");
+
+      toast.success(`Selamat datang, ${data.user.name.split(" ")[0]}!`);
+
+      if (data.user.role === "ORGANIZER") {
+        navigate("/dashboard");
+      } else {
+        navigate("/");
+      }
     },
     onError: (error: AxiosError<{ message: string }>) => {
       toast.error(error.response?.data.message || "Google login gagal!");
@@ -28,7 +34,9 @@ export function useGoogleAuth() {
   });
 
   const handleGoogleLogin = useGoogleLogin({
-    onSuccess: (response) => mutateAsync(response.access_token),
+    onSuccess: async (response) => {
+      await mutateAsync(response.access_token);
+    },
     onError: () => toast.error("Google login dibatalkan."),
   });
 
